@@ -1,14 +1,29 @@
-from ib_insync import *
-# util.startLoop()  # uncomment this line when in a notebook
+from ib_insync import IB
 
-ib = IB()
-ib.connect('127.0.0.1', 7496, clientId=1)
+from portfolio import Portfolio
 
-contract = Forex('EURUSD')
-bars = ib.reqHistoricalData(
-    contract, endDateTime='', durationStr='30 D',
-    barSizeSetting='1 hour', whatToShow='MIDPOINT', useRTH=True)
 
-# convert to pandas dataframe:
-df = util.df(bars)
-print(df)
+def main():
+    ib = IB()
+    ib.connect(
+        host="127.0.0.1",
+        port=7496,
+        clientId=0,
+    )
+    portfolio_items = ib.portfolio()
+    portfolio = Portfolio(portfolio_items=portfolio_items, ib=ib)
+    portfolio.request_contract_details()
+    portfolio.generate_combos()
+    portfolio.request_combo_margin()
+    total_maintenance_margin = 0
+    total_initial_margin = 0
+    for combo in portfolio.combos:
+        total_maintenance_margin += combo.maintenance_margin
+        total_initial_margin += combo.initial_margin
+    print(total_maintenance_margin)
+    print(total_initial_margin)
+    ib.disconnect()
+
+
+if __name__ == "__main__":
+    main()
