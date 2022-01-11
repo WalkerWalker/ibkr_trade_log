@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ibkr_trade_log"
+name = "ibkr-trade-log"
 version = "0.0.0-dev"
 description = ""
 authors = ["Jiamin Zhu <github@jiamin.io>"]
@@ -8,6 +8,8 @@ authors = ["Jiamin Zhu <github@jiamin.io>"]
 python = "^3.8"
 pandas = "^1.3.5"
 ib-insync = "^0.9.70"
+fastapi = "^0.71.0"
+uvicorn = {extras = ["standard"], version = "^0.16.0"}
 
 [tool.poetry.dev-dependencies]
 
