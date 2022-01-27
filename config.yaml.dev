@@ -1,0 +1,3 @@
+flex:
+  token: "token string"
+  query_id: "query id string"
