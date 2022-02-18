@@ -1,4 +1,7 @@
+from pathlib import Path
+
 import uvicorn
+from ib_insync import FlexReport
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
@@ -25,5 +28,15 @@ class ApiPlugin:
             )
 
         @self.api.get("/flex_report/load")
-        def load(filename):
-            self.messagebus.tell(StoreReport())
+        def load(filename: str, topic: str):
+            report_path = Path("reports") / filename
+            report = FlexReport(
+                path=report_path,
+            )
+
+            self.messagebus.tell(
+                StoreReport(
+                    report=report,
+                    topic=topic,
+                ),
+            )

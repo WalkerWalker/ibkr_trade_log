@@ -9,7 +9,8 @@ from messagebus.model import Command
 
 @dataclass(frozen=True)
 class StoreReport(Command):
-    pass
+    report: FlexReport
+    topic: str
 
 
 @dataclass(frozen=True)
@@ -26,7 +27,8 @@ class FlexHandler(Handler):
         self.messagebus.declare(StoreReport, self.handle_store_report)
 
     def handle_store_report(self, command: StoreReport):
-        print(121313123132131)
+        data_frame = command.report.df(topic=command.topic)
+        print(data_frame)
 
 
 def flex():
