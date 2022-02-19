@@ -5,6 +5,8 @@ import yaml
 from ddd import ValueObject
 from messagebus.handler import Handler
 from messagebus.model import Command
+from order.handler import StoreOrders
+from order.repository import OrderDataFrame
 
 
 @dataclass(frozen=True)
@@ -28,7 +30,13 @@ class FlexHandler(Handler):
 
     def handle_store_report(self, command: StoreReport):
         data_frame = command.report.df(topic=command.topic)
-        print(data_frame)
+        self.messagebus.tell(
+            StoreOrders(
+                order_data_frame=OrderDataFrame(
+                    data_frame=data_frame,
+                )
+            )
+        )
 
 
 def flex():

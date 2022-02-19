@@ -56,6 +56,7 @@ class RdbSessionFactory:
         )
 
     def startup(self):
+        self.metadata.drop_all(bind=self.engine)
         self.metadata.create_all(bind=self.engine)
 
     def build(self) -> RdbSession:

@@ -3,9 +3,11 @@ from typing import Optional
 
 from urllib.parse import quote_plus
 
+from ddd import ValueObject
 
-@dataclass
-class RdbConfig:
+
+@dataclass(frozen=True)
+class RdbConfig(ValueObject):
     autocommit = True
     autoflush = True
     scheme = "postgresql"

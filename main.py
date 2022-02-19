@@ -16,10 +16,17 @@ messagebus = MemoryMessageBus()
 # rdb plugin startup
 rdb_config = RdbConfig(**config["rdb"])
 rdb_session_factory = RdbSessionFactory(config=rdb_config)
+rdb_session_factory.startup()
 
 # flex handler
 flex_handler = FlexHandler(messagebus=messagebus)
 flex_handler.startup()
+
+# order
+order.startup(
+    rdb_session_factory=rdb_session_factory,
+    messagebus=messagebus,
+)
 
 # api plugin startup
 api_plugin = ApiPlugin(messagebus=messagebus)
