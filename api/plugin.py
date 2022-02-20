@@ -5,7 +5,7 @@ from ib_insync import FlexReport
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from flex.handler import flex, StoreReport
+from flex.handler import StoreReport
 from fastapi import FastAPI
 
 from messagebus.bus import MessageBus
