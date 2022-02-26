@@ -2,7 +2,7 @@ import yaml
 
 import order
 from api.plugin import ApiPlugin
-from flex.handler import FlexHandler
+from flex.handler import FlexHandler, FlexConfig
 from messagebus.memory import MemoryMessageBus
 from rdb.config import RdbConfig
 from rdb.session import RdbSessionFactory
@@ -19,7 +19,8 @@ rdb_session_factory = RdbSessionFactory(config=rdb_config)
 rdb_session_factory.startup()
 
 # flex handler
-flex_handler = FlexHandler(messagebus=messagebus)
+flex_config = FlexConfig(**config["flex"])
+flex_handler = FlexHandler(messagebus=messagebus, config=flex_config)
 flex_handler.startup()
 
 # order

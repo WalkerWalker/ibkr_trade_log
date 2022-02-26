@@ -5,7 +5,7 @@ from ib_insync import FlexReport
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from flex.handler import StoreReport
+from flex.handler import StoreReport, QueryAndStoreReport
 from fastapi import FastAPI
 
 from messagebus.bus import MessageBus
@@ -37,6 +37,14 @@ class ApiPlugin:
             self.messagebus.tell(
                 StoreReport(
                     report=report,
+                    topic=topic,
+                ),
+            )
+
+        @self.api.get("/flex_report/query")
+        def query(topic: str):
+            self.messagebus.tell(
+                QueryAndStoreReport(
                     topic=topic,
                 ),
             )
