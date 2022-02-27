@@ -18,7 +18,7 @@ class ApiPlugin:
         self._load_api()
 
     def startup(self):
-        uvicorn.run(self.api)
+        uvicorn.run(self.api, host="0.0.0.0")
 
     def _load_api(self):
         @self.api.get("/", include_in_schema=False)

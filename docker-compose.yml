@@ -26,3 +26,12 @@ services:
       - "5050:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+
+  ibkr-trade-log:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/app/config.yaml
