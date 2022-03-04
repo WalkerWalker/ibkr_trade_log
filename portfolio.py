@@ -1,9 +1,23 @@
 from typing import List
 
-from ib_insync import PortfolioItem, IB, Contract, ComboLeg
+from ib_insync import PortfolioItem, IB
 
 from model import DetailPortfolioItem, Combo
 
+
+def get_margin_report(ib):
+    portfolio_items = ib.portfolio()
+    portfolio = Portfolio(portfolio_items=portfolio_items, ib=ib)
+    portfolio.request_contract_details()
+    portfolio.generate_combos()
+    portfolio.request_combo_margin()
+    total = sum([combo.maintenance_margin for combo in portfolio.combos])
+    for combo in portfolio.combos:
+        print(
+            combo.symbol,
+            combo.maintenance_margin,
+            combo.maintenance_margin / total * 100,
+        )
 
 class Portfolio:
     def __init__(self, portfolio_items: List[PortfolioItem], ib: IB):
@@ -55,3 +69,6 @@ class Portfolio:
             )
             combo.initial_margin = -float(order_state.initMarginChange)
             combo.maintenance_margin = -float(order_state.maintMarginChange)
+
+    def write_to_google(self):
+        pass
