@@ -2,6 +2,11 @@ version: '3.8'
 volumes:
   postgres-data:
   pgadmin-data:
+networks:
+  ibkr:
+  reverse-proxy:
+    external:
+      name: reverse-proxy
 
 services:
   postgres:
@@ -11,6 +16,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - ibkr
     ports:
       - "5432:5432"
     volumes:
@@ -22,6 +29,9 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    networks:
+      - reverse-proxy
+      - ibkr
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     labels:
@@ -45,6 +55,9 @@ services:
     build:
       context: ..
     restart: unless-stopped
+    networks:
+      - reverse-proxy
+      - ibkr
     volumes:
       - ./config.yaml:/app/config.yaml
     labels:
