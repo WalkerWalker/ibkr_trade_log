@@ -1,0 +1,65 @@
+version: '3.8'
+volumes:
+  postgres-data:
+  pgadmin-data:
+
+services:
+  postgres:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    labels:
+      traefik.enable: "true"
+      # http
+      traefik.http.routers.pgadmin-http.rule: Host(`${pgadmin_host}`)
+      traefik.http.routers.pgadmin-http.entrypoints: http
+      traefik.http.routers.pgadmin-http.middlewares: https-redirect
+      # https
+      traefik.http.routers.pgadmin-https.rule: Host(`${pgadmin_host}`)
+      traefik.http.routers.pgadmin-https.entrypoints: https
+      traefik.http.routers.pgadmin-https.tls: "true"
+      traefik.http.routers.pgadmin-https.tls.certresolver: tlsresolver
+      # https middleware
+      traefik.http.middlewares.https-redirect.redirectscheme.scheme: https
+      traefik.http.middlewares.https-redirect.redirectscheme.permanent: "true"
+      # traefik dashboard
+      traefik.http.services.pgadmin.loadbalancer.server.port: 80
+
+  ibkr-trade-log:
+    build:
+      context: ..
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    labels:
+      traefik.enable: "true"
+      # http
+      traefik.http.routers.trade-log-http.rule: Host(`${trade_log_host}`)
+      traefik.http.routers.trade-log-http.entrypoints: http
+      traefik.http.routers.trade-log-http.middlewares: https-redirect
+      # https
+      traefik.http.routers.trade-log-https.rule: Host(`${trade_log_host}`)
+      traefik.http.routers.trade-log-https.entrypoints: https
+      traefik.http.routers.trade-log-https.tls: "true"
+      traefik.http.routers.trade-log-https.tls.certresolver: tlsresolver
+      # https middleware
+      traefik.http.middlewares.https-redirect.redirectscheme.scheme: https
+      traefik.http.middlewares.https-redirect.redirectscheme.permanent: "true"
+      # traefik dashboard
+      traefik.http.services.trade-log.loadbalancer.server.port: 8000

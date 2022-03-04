@@ -1,0 +1,32 @@
+flex:
+    token: ENC[AES256_GCM,data:fuKlUZnBOwFFYUS883C3sFaLecgBQTqw,iv:i/pvGcEDw2Ckp+l5OooLvQOyGJwnvM4Zez3UMSevrJ8=,tag:nrDjP+KIaMl/bB2NghYtvw==,type:float]
+    query_id: ENC[AES256_GCM,data:+te6RYEx,iv:P4RRbwmn/ll36Nqp/ZN0+ffxwv04ZYf7FtA00sDXXgE=,tag:BBX8d4HxQ0UTy7jeDQ5wxg==,type:int]
+rdb:
+    username: ENC[AES256_GCM,data:Lajmi0J2,iv:Ma6NaoRg5ifU92j0FPzqTF0athgCUhEdz5YMPJaEVpE=,tag:wzxSWzOBChxOVqMj1pCmlg==,type:str]
+    password: ENC[AES256_GCM,data:f4OS4fcl7LvmZ++/yttAJA==,iv:gCu2XzBXX5Qx3MNdP8hWW8MMXCJYDI5NS8lhlHvDvwY=,tag:e9ZYg3tW4wkIQwtBahtIZg==,type:str]
+    database: ENC[AES256_GCM,data:yYzjlA==,iv:qfSlDTxOgSCvZSW4c6BSn9jmm3BOhKU7cidZGpgQb14=,tag:h501TyYUOlteV4WzSrnlrw==,type:str]
+    host: ENC[AES256_GCM,data:MhrYD71WvBc=,iv:O1aTkKcpHev6Bx4KrhFXwzu6vj1PxF1+ulCGYkVlPHA=,tag:Zq3cJ2MkgczPydNi/IY/9A==,type:str]
+    port: ENC[AES256_GCM,data:utuXww==,iv:eYM+F86hpBWgSHUYFlm+jjFN6QQKrUU3zFXJzW98ROg=,tag:H6I5JC6wEi/DLkCV00tOFg==,type:int]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2022-03-01T20:32:40Z"
+    mac: ENC[AES256_GCM,data:vag38UY8WtRk0xHKbMSxSjPASHaNLTGdu/Xx0lIv+Y4M3CSFXyd4fcZnKRbwPneYGvA4LT2oWr10F4mkf2s6Mnoc93MG1Uj98gl2JWwlzkYDovm9eWhHiiw7Z2lV6r449mkNGF+UZl40JErRTnDDQyBWPrwtPEvQda+OUJFbtXI=,iv:hPyZLGkRZPyzd5URBos3b5acbt8jw8QNYdIuiMeeXno=,tag:qlMR3YnBgcacZEuVFKsKjA==,type:str]
+    pgp:
+        - created_at: "2022-03-01T20:32:39Z"
+          enc: |
+            -----BEGIN PGP MESSAGE-----
+
+            hF4D5cUAyLt2YJESAQdAq4DpHl5eyHfbSiDffJmILGsccvLY6HR6+yBXQ0VvQiMw
+            OMc2PKLWqdVYFfIlOtjMnSf4mk1gGyXX4LC8fxXSFT+KCdYjpkHmPuCi88WNgRb5
+            1GgBCQIVmjbZW/12iDrJAfMYrCi21V+iuRqnkV0pNESCa3TS9/Hr7Zaby2WNLhRz
+            G0GpXy7tOtCkHm/uB0iIvQ2GnA5CatZDRDrsmbacAOwksT7HEdijdFRV8oXG9S4+
+            G8vrcxX19VI7tg==
+            =ILlu
+            -----END PGP MESSAGE-----
+          fp: FCA733AAD5443936612E0532A6FE12FD7F3BC866
+    unencrypted_suffix: _unencrypted
+    version: 3.7.1
