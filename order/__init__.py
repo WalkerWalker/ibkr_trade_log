@@ -5,13 +5,20 @@ from order.handler import OrderHandler
 from order.repository import OrderRepository
 
 
-def startup(rdb_session_factory: RdbSessionFactory, messagebus: MessageBus):
-    order_repository = OrderRepository(
-        rdb_session=rdb_session_factory.build(),
-    )
+class OrderPlugin:
+    def __init__(
+        self,
+        rdb_session_factory: RdbSessionFactory,
+        messagebus: MessageBus,
+    ):
+        self.order_repository = OrderRepository(
+            rdb_session=rdb_session_factory.build(),
+        )
 
-    order_handler = OrderHandler(
-        messagebus=messagebus,
-        order_repository=order_repository,
-    )
-    order_handler.startup()
+        self.order_handler = OrderHandler(
+            messagebus=messagebus,
+            order_repository=self.order_repository,
+        )
+
+    def startup(self):
+        self.order_handler.startup()

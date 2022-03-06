@@ -1,34 +1,23 @@
+import asyncio
+
 import yaml
 
 import order
 from api.plugin import ApiPlugin
+from app.app import IbkrApp
 from flex.handler import FlexHandler, FlexConfig
 from messagebus.memory import MemoryMessageBus
 from rdb.config import RdbConfig
 from rdb.session import RdbSessionFactory
 
-with open("config.yaml", "r") as config_file:
-    config = yaml.safe_load(config_file)
 
-# messagebus plugin startup
-messagebus = MemoryMessageBus()
+def main():
+    with open("config.yaml", "r") as config_file:
+        config = yaml.safe_load(config_file)
 
-# rdb plugin startup
-rdb_config = RdbConfig(**config["rdb"])
-rdb_session_factory = RdbSessionFactory(config=rdb_config)
-rdb_session_factory.startup()
+    app = IbkrApp(config=config)
+    app.api_plugin.serve()
 
-# flex handler
-flex_config = FlexConfig(**config["flex"])
-flex_handler = FlexHandler(messagebus=messagebus, config=flex_config)
-flex_handler.startup()
 
-# order
-order.startup(
-    rdb_session_factory=rdb_session_factory,
-    messagebus=messagebus,
-)
-
-# api plugin startup
-api_plugin = ApiPlugin(messagebus=messagebus)
-api_plugin.startup()
+if __name__ == "__main__":
+    main()
