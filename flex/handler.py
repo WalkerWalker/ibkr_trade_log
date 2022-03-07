@@ -1,12 +1,17 @@
 from dataclasses import dataclass
+from datetime import timedelta
+import random
+from typing import Optional
+
 from ib_insync import FlexReport
-import yaml
+from rx.disposable import Disposable
 
 from ddd import ValueObject
 from messagebus.handler import Handler
 from messagebus.model import Command
 from order.handler import StoreOrders
 from order.repository import OrderDataFrame
+from scheduler.scheduler import Scheduler
 
 
 @dataclass(frozen=True)
@@ -24,16 +29,30 @@ class QueryAndStoreReport(Command):
 class FlexConfig(ValueObject):
     token: str
     query_id: str
+    query_interval_in_days: int = 1
 
 
 class FlexHandler(Handler):
-    def __init__(self, messagebus, config: FlexConfig):
+    def __init__(self, messagebus, scheduler, config: FlexConfig):
         super().__init__(messagebus)
+        self.scheduler: Scheduler = scheduler
         self.config = config
+        self._subscription: Optional[Disposable] = None
 
     def startup(self):
         self.messagebus.declare(StoreReport, self.handle_store_report)
         self.messagebus.declare(QueryAndStoreReport, self.handle_query_and_store_report)
+
+        self._subscription = self.scheduler.schedule(
+            duetime=timedelta(seconds=random.randint(0, 60)),
+            period=timedelta(days=self.config.query_interval_in_days),
+            callback=self.query_and_store_report,
+        )
+
+    def query_and_store_report(self):
+        self.messagebus.tell(
+            QueryAndStoreReport(topic="Order")  # TODO put topic(s) in config
+        )
 
     def handle_query_and_store_report(self, command: QueryAndStoreReport):
         report = FlexReport(
