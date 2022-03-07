@@ -1,6 +1,7 @@
 flex:
   token: "token string"
   query_id: "query id string"
+  query_interval_in_days: 1
 rdb:
   username: root
   password: root
