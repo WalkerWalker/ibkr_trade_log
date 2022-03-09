@@ -6,9 +6,9 @@ from pandas import DataFrame
 from sqlalchemy import Column, Text, Float, Integer, Date, DateTime
 from sqlalchemy.dialects.postgresql import insert
 
-from ddd import ValueObject
-from rdb import RdbEntity
-from rdb.session import RdbSession
+from ibkr_trade_log.ddd import ValueObject
+from ibkr_trade_log.rdb import RdbEntity
+from ibkr_trade_log.rdb.session import RdbSession
 
 
 @dataclass(frozen=True)

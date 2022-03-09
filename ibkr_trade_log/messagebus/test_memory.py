@@ -4,8 +4,8 @@ import pytest
 from assertpy import assert_that
 from pytest_mock import MockerFixture
 
-from messagebus.model import Message, Command, Query, Event
-from messagebus.memory import MemoryMessageBus
+from ibkr_trade_log.messagebus.model import Message, Command, Query, Event
+from ibkr_trade_log.messagebus.memory import MemoryMessageBus
 
 
 @dataclass(frozen=True)

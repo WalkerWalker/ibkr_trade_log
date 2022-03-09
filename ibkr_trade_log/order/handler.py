@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import List
 
-from messagebus.handler import Handler
-from messagebus.model import Command
-from order.repository import _Order, OrderDataFrame
+from ibkr_trade_log.messagebus.handler import Handler
+from ibkr_trade_log.messagebus.model import Command
+from ibkr_trade_log.order.repository import OrderDataFrame
 
 
 @dataclass(frozen=True)

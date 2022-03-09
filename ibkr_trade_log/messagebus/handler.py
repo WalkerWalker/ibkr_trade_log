@@ -1,4 +1,4 @@
-from messagebus.bus import MessageBus
+from ibkr_trade_log.messagebus.bus import MessageBus
 
 
 class Handler:

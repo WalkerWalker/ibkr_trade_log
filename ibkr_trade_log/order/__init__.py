@@ -1,8 +1,8 @@
-from messagebus.bus import MessageBus
-from rdb.session import RdbSessionFactory
+from ibkr_trade_log.messagebus.bus import MessageBus
+from ibkr_trade_log.rdb.session import RdbSessionFactory
 
-from order.handler import OrderHandler
-from order.repository import OrderRepository
+from ibkr_trade_log.order.handler import OrderHandler
+from ibkr_trade_log.order.repository import OrderRepository
 
 
 class OrderPlugin:

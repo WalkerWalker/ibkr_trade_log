@@ -2,7 +2,7 @@ from typing import List
 
 from ib_insync import PortfolioItem, IB
 
-from model import DetailPortfolioItem, Combo
+from ibkr_trade_log.model import DetailPortfolioItem, Combo
 
 
 def get_margin_report(ib):
@@ -18,6 +18,7 @@ def get_margin_report(ib):
             combo.maintenance_margin,
             combo.maintenance_margin / total * 100,
         )
+
 
 class Portfolio:
     def __init__(self, portfolio_items: List[PortfolioItem], ib: IB):

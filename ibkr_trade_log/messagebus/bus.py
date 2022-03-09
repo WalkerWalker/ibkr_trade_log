@@ -1,6 +1,6 @@
-from typing import Callable, Optional, Any, Coroutine, Type, TypeVar
+from typing import Callable, Optional, Any, Type, TypeVar
 
-from messagebus.model import Message, Event
+from ibkr_trade_log.messagebus.model import Message, Event
 
 MessageType = TypeVar("MessageType", bound=Message)
 EventType = TypeVar("EventType", bound=Event)

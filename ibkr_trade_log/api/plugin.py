@@ -5,8 +5,9 @@ from ib_insync import FlexReport
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from flex.handler import StoreReport, QueryAndStoreReport
 from fastapi import FastAPI
+
+from ibkr_trade_log.flex.handler import QueryAndStoreReport
 
 
 class ApiPlugin:

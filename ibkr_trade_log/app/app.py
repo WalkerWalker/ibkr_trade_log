@@ -1,10 +1,12 @@
-from api.plugin import ApiPlugin
-from flex.handler import FlexConfig, FlexHandler
-from messagebus.memory import MemoryMessageBus
-from order import OrderPlugin
-from rdb.config import RdbConfig
-from rdb.session import RdbSessionFactory
-from scheduler.scheduler import Scheduler
+from ibkr_trade_log.api.plugin import ApiPlugin
+from ibkr_trade_log.flex.handler import FlexConfig, FlexHandler
+
+from ibkr_trade_log.cli.cli import CliPlugin
+from ibkr_trade_log.messagebus.memory import MemoryMessageBus
+from ibkr_trade_log.order import OrderPlugin
+from ibkr_trade_log.rdb.config import RdbConfig
+from ibkr_trade_log.rdb.session import RdbSessionFactory
+from ibkr_trade_log.scheduler.scheduler import Scheduler
 
 
 class IbkrApp:
@@ -28,6 +30,7 @@ class IbkrApp:
         )
 
         self.api_plugin = ApiPlugin(app=self)
+        self.cli_plugin = CliPlugin(app=self)
 
     async def startup(self):
         self.scheduler.startup()
