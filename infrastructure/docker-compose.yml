@@ -60,6 +60,7 @@ services:
       - ibkr
     volumes:
       - ./config.yaml:/app/config.yaml
+      - ./reports:/etc/reports
     labels:
       traefik.enable: "true"
       # http

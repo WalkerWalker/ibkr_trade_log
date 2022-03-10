@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import timedelta
 import random
+from pathlib import Path
 from typing import Optional
 
 from ib_insync import FlexReport
@@ -16,7 +17,7 @@ from ibkr_trade_log.scheduler.scheduler import Scheduler
 
 @dataclass(frozen=True)
 class StoreReport(Command):
-    report: FlexReport
+    filename: str
     topic: str
 
 
@@ -27,6 +28,7 @@ class QueryAndStoreReport(Command):
 
 @dataclass(frozen=True)
 class FlexConfig(ValueObject):
+    report_base: str
     token: str
     query_id: str
     query_interval_in_days: int = 1
@@ -72,7 +74,12 @@ class FlexHandler(Handler):
         )
 
     def handle_store_report(self, command: StoreReport):
-        data_frame = command.report.df(
+        report_path = Path(self.config.report_base) / "reports" / command.filename
+        report = FlexReport(
+            path=report_path,
+        )
+
+        data_frame = report.df(
             topic=command.topic,
             parseNumbers=False,
         )

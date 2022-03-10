@@ -5,5 +5,5 @@ RUN pip install poetry
 COPY . .
 RUN poetry config virtualenvs.create false \
     && poetry install
-CMD ["/app/main.py"]
-ENTRYPOINT ["python"]
+CMD ["serve"]
+ENTRYPOINT ["ibkr-trade-log"]

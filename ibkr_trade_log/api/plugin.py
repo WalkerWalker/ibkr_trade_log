@@ -7,7 +7,7 @@ from starlette.responses import RedirectResponse
 
 from fastapi import FastAPI
 
-from ibkr_trade_log.flex.handler import QueryAndStoreReport
+from ibkr_trade_log.flex.handler import QueryAndStoreReport, StoreReport
 
 
 class ApiPlugin:
@@ -33,14 +33,9 @@ class ApiPlugin:
 
         @self.api.post("/flex_report/load_and_store")
         def load_and_store(filename: str, topic: str):
-            report_path = Path("reports") / filename
-            report = FlexReport(
-                path=report_path,
-            )
-
             self.messagebus.tell(
                 StoreReport(
-                    report=report,
+                    filename=filename,
                     topic=topic,
                 ),
             )
