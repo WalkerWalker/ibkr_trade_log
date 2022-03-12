@@ -10,7 +10,7 @@ class MessageBus:
     def declare(
         self,
         message_type: Type[Message],
-        handler: Callable[[MessageType], None],
+        handler: Callable[[MessageType], Optional[Any]],
     ):
         raise NotImplementedError()
 

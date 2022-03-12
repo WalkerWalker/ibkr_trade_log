@@ -14,7 +14,7 @@ class MemoryMessageBus(MessageBus):
     def declare(
         self,
         message_type: Type[Message],
-        handler: Callable[[MessageType], None],
+        handler: Callable[[MessageType], Optional[Any]],
     ):
         message_type_str = get_class_path(message_type)
         self.message_handlers[message_type_str] = handler
