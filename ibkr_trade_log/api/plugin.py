@@ -1,13 +1,10 @@
-from pathlib import Path
-
 import uvicorn
-from ib_insync import FlexReport
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from fastapi import FastAPI
 
-from ibkr_trade_log.flex.handler import QueryAndStoreReport, StoreReport
+from ibkr_trade_log.flex.handler import QueryAndStoreReport, LoadAndStoreReport
 
 
 class ApiPlugin:
@@ -32,18 +29,15 @@ class ApiPlugin:
             )
 
         @self.api.post("/flex_report/load_and_store")
-        def load_and_store(filename: str, topic: str):
+        def load_and_store(filename: str):
             self.messagebus.tell(
-                StoreReport(
+                LoadAndStoreReport(
                     filename=filename,
-                    topic=topic,
                 ),
             )
 
         @self.api.post("/flex_report/query_and_store")
-        def query_and_store(topic: str):
+        def query_and_store():
             self.messagebus.tell(
-                QueryAndStoreReport(
-                    topic=topic,
-                ),
+                QueryAndStoreReport(),
             )

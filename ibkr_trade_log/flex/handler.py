@@ -2,28 +2,28 @@ from dataclasses import dataclass
 from datetime import timedelta
 import random
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
+import pandas as pd
 from ib_insync import FlexReport
 from rx.disposable import Disposable
 
 from ibkr_trade_log.ddd import ValueObject
 from ibkr_trade_log.messagebus.handler import Handler
-from ibkr_trade_log.messagebus.model import Command
+from ibkr_trade_log.messagebus.model import Command, Query
 from ibkr_trade_log.order.handler import StoreOrders
 from ibkr_trade_log.order.repository import OrderDataFrame
 from ibkr_trade_log.scheduler.scheduler import Scheduler
 
 
 @dataclass(frozen=True)
-class StoreReport(Command):
-    filename: str
-    topic: str
+class QueryAndStoreReport(Command):
+    pass
 
 
 @dataclass(frozen=True)
-class QueryAndStoreReport(Command):
-    topic: str
+class LoadAndStoreReport(Command):
+    filename: str
 
 
 @dataclass(frozen=True)
@@ -31,6 +31,7 @@ class FlexConfig(ValueObject):
     report_base: str
     token: str
     query_id: str
+    topics: List[str]
     query_interval_in_days: int = 1
 
 
@@ -42,7 +43,7 @@ class FlexHandler(Handler):
         self._subscription: Optional[Disposable] = None
 
     def startup(self):
-        self.messagebus.declare(StoreReport, self.handle_store_report)
+        self.messagebus.declare(LoadAndStoreReport, self.handle_load_and_store_report)
         self.messagebus.declare(QueryAndStoreReport, self.handle_query_and_store_report)
 
         self._subscription = self.scheduler.schedule(
@@ -52,37 +53,41 @@ class FlexHandler(Handler):
         )
 
     def query_and_store_report(self):
-        self.messagebus.tell(
-            QueryAndStoreReport(topic="Order")  # TODO put topic(s) in config
+        self.messagebus.tell(QueryAndStoreReport())
+
+    def handle_load_and_store_report(self, command: LoadAndStoreReport):
+        report = self.load_report(
+            report_path=Path(self.config.report_base) / "reports" / command.filename
         )
+        self.store_report(report)
 
     def handle_query_and_store_report(self, command: QueryAndStoreReport):
         report = FlexReport(
             token=self.config.token,
             queryId=self.config.query_id,
         )
-        data_frame = report.df(
-            topic=command.topic,
-            parseNumbers=False,
-        )
-        self.messagebus.tell(
-            StoreOrders(
-                order_data_frame=OrderDataFrame(
-                    data_frame=data_frame,
-                )
-            )
-        )
+        self.store_report(report)
 
-    def handle_store_report(self, command: StoreReport):
-        report_path = Path(self.config.report_base) / "reports" / command.filename
-        report = FlexReport(
+    def load_report(self, report_path: Path):
+        return FlexReport(
             path=report_path,
         )
 
-        data_frame = report.df(
-            topic=command.topic,
-            parseNumbers=False,
+    def query_report(self, token: str, query_id: str):
+        return FlexReport(
+            token=token,
+            queryId=query_id,
         )
+
+    def store_report(self, report: FlexReport):
+        data_frame_in_topics = []
+        for topic in self.config.topics:
+            data_frame = report.df(
+                topic=topic,
+                parseNumbers=False,
+            )
+            data_frame_in_topics.append(data_frame)
+        data_frame = pd.concat(data_frame_in_topics)
         self.messagebus.tell(
             StoreOrders(
                 order_data_frame=OrderDataFrame(
