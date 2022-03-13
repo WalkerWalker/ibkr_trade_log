@@ -13,7 +13,7 @@ class OrderDataFrame(ValueObject):
     data_frame: DataFrame
 
 
-class _Order(RdbEntity):
+class Order(RdbEntity):
     __tablename__ = "ibkr_orders"
     ibOrderID = Column(Text, primary_key=True)
     accountId = Column(Text)
@@ -98,5 +98,5 @@ class _Order(RdbEntity):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
-class OrderRepository(RdbRepository[OrderDataFrame, _Order]):
+class OrderRepository(RdbRepository[OrderDataFrame, Order]):
     pass
