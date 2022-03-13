@@ -36,16 +36,15 @@ class FlexConfig(ValueObject):
 
 
 class FlexHandler(Handler):
-    def __init__(self, messagebus, scheduler, config: FlexConfig):
+    def __init__(self, messagebus, scheduler: Scheduler, config: FlexConfig):
         super().__init__(messagebus)
-        self.scheduler: Scheduler = scheduler
+        self.scheduler = scheduler
         self.config = config
-        self._subscription: Optional[Disposable] = None
+        self._subscription = None
 
     def startup(self):
         self.messagebus.declare(LoadAndStoreReport, self.handle_load_and_store_report)
         self.messagebus.declare(QueryAndStoreReport, self.handle_query_and_store_report)
-
         self._subscription = self.scheduler.schedule(
             duetime=timedelta(seconds=random.randint(0, 60)),
             period=timedelta(days=self.config.query_interval_in_days),
