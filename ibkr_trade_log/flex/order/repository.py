@@ -1,14 +1,11 @@
 from dataclasses import dataclass
-from datetime import date, datetime
-from typing import List
 
 from pandas import DataFrame
 from sqlalchemy import Column, Text, Float, Integer, Date, DateTime
-from sqlalchemy.dialects.postgresql import insert
 
 from ibkr_trade_log.ddd import ValueObject
 from ibkr_trade_log.rdb import RdbEntity
-from ibkr_trade_log.rdb.session import RdbSession
+from ibkr_trade_log.rdb.repository import RdbRepository
 
 
 @dataclass(frozen=True)
@@ -101,67 +98,5 @@ class _Order(RdbEntity):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
-class OrderMapper:
-    def cast_to_valid_format(self, record: dict):
-        new_record = {}
-        for column in _Order.__table__.columns:
-            value = record[column.name]
-            if value == "":
-                new_value = None
-            else:
-                if column.type.python_type in [str, int, float]:
-                    new_value = column.type.python_type(value)
-                elif column.type.python_type == date:
-                    new_value = datetime.strptime(value, "%Y%m%d").date()
-                elif column.type.python_type == datetime:
-                    new_value = datetime.strptime(value, "%Y%m%d;%H%M%S")
-                else:
-                    print(column.type)
-                    raise NotImplementedError
-            new_record[column.name] = new_value
-        return new_record
-
-    def to_dto_list(self, orders: OrderDataFrame) -> List[_Order]:
-        records = orders.data_frame.to_dict("records")
-        return [_Order(**self.cast_to_valid_format(record)) for record in records]
-
-    def to_dict_list(self, orders: OrderDataFrame):
-        dtos = self.to_dto_list(orders)
-        return [dto.to_dict() for dto in dtos]
-
-
-class OrderRepository:
-    def __init__(self, rdb_session: RdbSession):
-        self.rdb_session = rdb_session
-        self.mapper = OrderMapper()
-
-    def create(self, order: _Order):
-        with self.rdb_session.write as session:
-            session.add(order)
-
-    def update(self, order: _Order):
-        with self.rdb_session.write as session:
-            session.merge(order)
-
-    def find(self, id):
-        with self.rdb_session.read as session:
-            return session.query(_Order).filter(_Order.id == id).first()
-
-    def all_limit(self, limit: int = 5000):
-        with self.rdb_session.read as session:
-            return session.query(_Order).limit(limit).all()
-
-    def delete(self, order: _Order):
-        with self.rdb_session.write as session:
-            session.query(_Order).filter(_Order.id == order.id).delete()
-
-    def add(self, orders: OrderDataFrame):
-        dto_dict_list = self.mapper.to_dict_list(orders)
-        with self.rdb_session.write as session:
-            session.execute(
-                insert(_Order)
-                .values(dto_dict_list)
-                .on_conflict_do_nothing(
-                    constraint=_Order.__table__.primary_key,
-                )
-            )
+class OrderRepository(RdbRepository[OrderDataFrame, _Order]):
+    pass
