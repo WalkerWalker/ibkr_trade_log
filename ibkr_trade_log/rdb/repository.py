@@ -32,22 +32,26 @@ class RdbMapper(Generic[DataFrameType, RecordType], metaclass=ABCMeta):
                 elif column.type.python_type == date:
                     new_value = datetime.strptime(value, "%Y%m%d").date()
                 elif column.type.python_type == datetime:
-                    new_value = datetime.strptime(value, "%Y%m%d;%H%M%S")
+                    if ";" in value:
+                        new_value = datetime.strptime(value, "%Y%m%d;%H%M%S")
+                    else:
+                        # Some datetime field has not time attribute in the ibkr report
+                        new_value = datetime.strptime(value, "%Y%m%d")
                 else:
                     print(column.type)
                     raise NotImplementedError
             new_record[column.name] = new_value
         return new_record
 
-    def to_dto_list(self, orders: DataFrameType) -> List[RecordType]:
-        records = orders.data_frame.to_dict("records")
+    def to_record_list(self, record_df: DataFrameType) -> List[RecordType]:
+        records = record_df.data_frame.to_dict("records")
         return [
             self.record_type(**self.cast_to_valid_format(record)) for record in records
         ]
 
-    def to_dict_list(self, orders: DataFrameType):
-        dtos = self.to_dto_list(orders)
-        return [dto.to_dict() for dto in dtos]
+    def to_dict_list(self, record_df: DataFrameType):
+        record_list = self.to_record_list(record_df)
+        return [record.to_dict() for record in record_list]
 
     @staticmethod
     def from_repository(repository):
@@ -96,12 +100,14 @@ class RdbRepository(Generic[DataFrameType, RecordType], metaclass=ABCMeta):
                 self.record_type.id == order.id
             ).delete()
 
-    def add(self, orders: DataFrameType):
-        dto_dict_list = self.mapper.to_dict_list(orders)
+    def add(self, record_set: DataFrameType):
+        if record_set.data_frame is None:
+            return
+        record_dict_list = self.mapper.to_dict_list(record_set)
         with self.rdb_session.write as session:
             session.execute(
                 insert(self.record_type)
-                .values(dto_dict_list)
+                .values(record_dict_list)
                 .on_conflict_do_nothing(
                     constraint=self.record_type.__table__.primary_key,
                 )

@@ -9,7 +9,11 @@ from ib_insync import FlexReport
 from rx.disposable import Disposable
 
 from ibkr_trade_log.ddd import ValueObject
+from ibkr_trade_log.flex.cash_transaction.handler import StoreCashTransactions
+from ibkr_trade_log.flex.cash_transaction.repository import CashTransactionDataFrame
 from ibkr_trade_log.flex.order.repository import OrderDataFrame
+from ibkr_trade_log.flex.transfer.handler import StoreTransfers
+from ibkr_trade_log.flex.transfer.repository import TransferDataFrame
 from ibkr_trade_log.messagebus.handler import Handler
 from ibkr_trade_log.messagebus.model import Command
 from ibkr_trade_log.flex.order.handler import StoreOrders
@@ -79,18 +83,41 @@ class FlexHandler(Handler):
         )
 
     def store_report(self, report: FlexReport):
-        data_frame_in_topics = []
-        for topic in self.config.topics:
+        if "Order" in self.config.topics:
             data_frame = report.df(
-                topic=topic,
+                topic="Order",
                 parseNumbers=False,
             )
-            data_frame_in_topics.append(data_frame)
-        data_frame = pd.concat(data_frame_in_topics)
-        self.messagebus.tell(
-            StoreOrders(
-                order_data_frame=OrderDataFrame(
-                    data_frame=data_frame,
+            self.messagebus.tell(
+                StoreOrders(
+                    order_data_frame=OrderDataFrame(
+                        data_frame=data_frame,
+                    )
                 )
             )
-        )
+
+        if "Transfer" in self.config.topics:
+            data_frame = report.df(
+                topic="Transfer",
+                parseNumbers=False,
+            )
+            self.messagebus.tell(
+                StoreTransfers(
+                    transfer_data_frame=TransferDataFrame(
+                        data_frame=data_frame,
+                    )
+                )
+            )
+
+        if "CashTransaction" in self.config.topics:
+            data_frame = report.df(
+                topic="CashTransaction",
+                parseNumbers=False,
+            )
+            self.messagebus.tell(
+                StoreCashTransactions(
+                    cash_transaction_data_frame=CashTransactionDataFrame(
+                        data_frame=data_frame,
+                    )
+                )
+            )

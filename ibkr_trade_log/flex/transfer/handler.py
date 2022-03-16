@@ -20,5 +20,5 @@ class TransferHandler(Handler):
 
     def handle_transfers(self, command: StoreTransfers):
         self.transfer_repository.add(
-            orders=command.transfer_data_frame,
+            record_set=command.transfer_data_frame,
         )

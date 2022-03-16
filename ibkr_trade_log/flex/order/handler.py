@@ -20,5 +20,5 @@ class OrderHandler(Handler):
 
     def handle_store_orders(self, command: StoreOrders):
         self.order_repository.add(
-            orders=command.order_data_frame,
+            record_set=command.order_data_frame,
         )

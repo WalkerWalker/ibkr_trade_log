@@ -20,5 +20,5 @@ class CashTransactionHandler(Handler):
 
     def handle_cash_transactions(self, command: StoreCashTransactions):
         self.cash_transaction_repository.add(
-            orders=command.cash_transaction_data_frame,
+            record_set=command.cash_transaction_data_frame,
         )
