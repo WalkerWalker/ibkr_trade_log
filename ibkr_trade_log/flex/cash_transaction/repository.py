@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from pandas import DataFrame
 from sqlalchemy import Column, Text, Float, Integer, Date, DateTime
 
-from ibkr_trade_log.bootstrap.ddd import ValueObject
-from ibkr_trade_log.bootstrap.rdb import RdbEntity
-from ibkr_trade_log.bootstrap.rdb.repository import RdbRepository
+from bootstrap.ddd import ValueObject
+from bootstrap.rdb import RdbEntity
+from bootstrap.rdb.repository import RdbRepository
 
 
 @dataclass(frozen=True)

@@ -1,5 +1,5 @@
-from ibkr_trade_log.bootstrap.messagebus.bus import MessageBus
-from ibkr_trade_log.bootstrap.rdb.session import RdbSessionFactory
+from bootstrap.messagebus.bus import MessageBus
+from bootstrap.rdb.session import RdbSessionFactory
 
 from ibkr_trade_log.flex.order.handler import OrderHandler
 from ibkr_trade_log.flex.order.repository import OrderRepository, OrderDataFrame, Order

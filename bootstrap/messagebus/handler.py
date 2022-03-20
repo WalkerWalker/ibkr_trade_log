@@ -1,4 +1,4 @@
-from ibkr_trade_log.bootstrap.messagebus.bus import MessageBus
+from bootstrap.messagebus.bus import MessageBus
 
 
 class Handler:

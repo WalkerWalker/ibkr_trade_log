@@ -1,12 +1,12 @@
+from bootstrap.rdb.config import RdbConfig
+from bootstrap.scheduler.scheduler import Scheduler
 from ibkr_trade_log.api.plugin import ApiPlugin
 from ibkr_trade_log.flex import FlexPlugin
 from ibkr_trade_log.flex.handler import FlexConfig
 
 from ibkr_trade_log.cli.cli import CliPlugin
-from ibkr_trade_log.bootstrap.messagebus.memory import MemoryMessageBus
-from ibkr_trade_log.bootstrap.rdb.config import RdbConfig
-from ibkr_trade_log.bootstrap.rdb.session import RdbSessionFactory
-from ibkr_trade_log.bootstrap.scheduler.scheduler import Scheduler
+from bootstrap.messagebus.memory import MemoryMessageBus
+from bootstrap.rdb.session import RdbSessionFactory
 
 
 class IbkrApp:

@@ -3,7 +3,7 @@ from typing import Optional
 
 from urllib.parse import quote_plus
 
-from ibkr_trade_log.bootstrap.ddd import ValueObject
+from bootstrap.ddd import ValueObject
 
 
 @dataclass(frozen=True)
