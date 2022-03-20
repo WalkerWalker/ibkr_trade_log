@@ -1,16 +1,11 @@
-from abc import ABC, ABCMeta
 from dataclasses import dataclass
-from datetime import date, datetime
-from typing import List, TypeVar, Generic
 
 from pandas import DataFrame
 from sqlalchemy import Column, Text, Float, Integer, Date, DateTime
-from sqlalchemy.dialects.postgresql import insert
 
-from ibkr_trade_log.ddd import ValueObject
-from ibkr_trade_log.rdb import RdbEntity
-from ibkr_trade_log.rdb.repository import RdbRepository
-from ibkr_trade_log.rdb.session import RdbSession
+from ibkr_trade_log.bootstrap.ddd import ValueObject
+from ibkr_trade_log.bootstrap.rdb import RdbEntity
+from ibkr_trade_log.bootstrap.rdb.repository import RdbRepository
 
 
 @dataclass(frozen=True)

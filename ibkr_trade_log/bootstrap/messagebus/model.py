@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TypeVar, Generic
 
-from ibkr_trade_log.ddd import ValueObject
+from ibkr_trade_log.bootstrap.ddd import ValueObject
 
 
 @dataclass(frozen=True)

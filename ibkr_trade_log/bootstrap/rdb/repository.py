@@ -5,7 +5,7 @@ from typing import List, TypeVar, Generic, get_args
 
 from sqlalchemy.dialects.postgresql import insert
 
-from ibkr_trade_log.rdb.session import RdbSession
+from ibkr_trade_log.bootstrap.rdb.session import RdbSession
 
 DataFrameType = TypeVar("DataFrameType")
 RecordType = TypeVar("RecordType")

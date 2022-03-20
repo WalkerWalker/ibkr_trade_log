@@ -3,8 +3,8 @@ from threading import Lock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from ibkr_trade_log.rdb import RdbEntity
-from ibkr_trade_log.rdb.config import RdbConfig
+from ibkr_trade_log.bootstrap.rdb import RdbEntity
+from ibkr_trade_log.bootstrap.rdb.config import RdbConfig
 
 
 class RdbSession:

@@ -1,9 +1,9 @@
 from collections import defaultdict
 from typing import Callable, Optional, Any, Type
 
-from ibkr_trade_log.messagebus.model import Message, Event
-from ibkr_trade_log.messagebus.bus import MessageBus, MessageType, EventType
-from ibkr_trade_log.messagebus.util import get_class_path
+from ibkr_trade_log.bootstrap.messagebus.model import Message, Event
+from ibkr_trade_log.bootstrap.messagebus.bus import MessageBus, MessageType, EventType
+from ibkr_trade_log.bootstrap.messagebus.util import get_class_path
 
 
 class MemoryMessageBus(MessageBus):

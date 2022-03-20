@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from ibkr_trade_log.flex.transfer.repository import TransferDataFrame
-from ibkr_trade_log.messagebus.handler import Handler
-from ibkr_trade_log.messagebus.model import Command
+from ibkr_trade_log.bootstrap.messagebus.handler import Handler
+from ibkr_trade_log.bootstrap.messagebus.model import Command
 
 
 @dataclass(frozen=True)
