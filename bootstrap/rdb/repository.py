@@ -1,17 +1,18 @@
-from abc import ABCMeta
+from abc import ABC
 from datetime import date, datetime
 from types import new_class
 from typing import List, TypeVar, Generic, get_args
 
 from sqlalchemy.dialects.postgresql import insert
 
+from bootstrap.logger import LoggerMixin
 from bootstrap.rdb.session import RdbSession
 
 DataFrameType = TypeVar("DataFrameType")
 RecordType = TypeVar("RecordType")
 
 
-class RdbMapper(Generic[DataFrameType, RecordType], metaclass=ABCMeta):
+class RdbMapper(Generic[DataFrameType, RecordType], LoggerMixin, ABC):
     @property
     def data_frame_type(self):
         return get_args(self.__class__.__orig_bases__[0])[0]  # noqa
@@ -61,7 +62,7 @@ class RdbMapper(Generic[DataFrameType, RecordType], metaclass=ABCMeta):
         )()
 
 
-class RdbRepository(Generic[DataFrameType, RecordType], metaclass=ABCMeta):
+class RdbRepository(Generic[DataFrameType, RecordType], LoggerMixin, ABC):
     @property
     def data_frame_type(self):
         return get_args(self.__class__.__orig_bases__[0])[0]  # noqa

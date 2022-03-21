@@ -54,6 +54,7 @@ class FlexHandler(Handler):
         )
 
     def query_and_store_report(self):
+        self.logger.info("Scheduler triggers query and store report")
         self.messagebus.tell(QueryAndStoreReport())
 
     def handle_load_and_store_report(self, command: LoadAndStoreReport):
@@ -81,6 +82,10 @@ class FlexHandler(Handler):
         )
 
     def store_report(self, report: FlexReport):
+        report_info = report.extract("FlexStatement")[0]
+        self.logger.info(
+            f"Start storing report {report_info.fromDate} to {report_info.toDate}"
+        )
         if "Order" in self.config.topics:
             data_frame = report.df(
                 topic="Order",
