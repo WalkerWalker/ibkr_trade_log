@@ -1,13 +1,16 @@
+import logging
+
 import uvicorn
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from fastapi import FastAPI
 
+from bootstrap.logger import LoggerMixin
 from ibkr_trade_log.flex.handler import QueryAndStoreReport, LoadAndStoreReport
 
 
-class ApiPlugin:
+class ApiPlugin(LoggerMixin):
     def __init__(self, app):
         self.api = FastAPI()
         self.app = app
@@ -15,7 +18,7 @@ class ApiPlugin:
         self._load_api()
 
     def serve(self):
-        uvicorn.run(self.api, host="0.0.0.0")
+        uvicorn.run(self.api, host="0.0.0.0", log_config=self.logger_config)
 
     def _load_api(self):
         @self.api.on_event("startup")
