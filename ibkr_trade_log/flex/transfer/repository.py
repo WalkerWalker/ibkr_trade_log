@@ -70,5 +70,5 @@ class Transfer(RdbEntity):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
-class TransferRepository(RdbRepository[TransferDataFrame, Transfer]):
+class TransferRepository(RdbRepository[Transfer]):
     pass

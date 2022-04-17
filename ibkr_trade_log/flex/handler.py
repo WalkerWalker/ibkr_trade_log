@@ -1,21 +1,18 @@
 from dataclasses import dataclass
 from datetime import timedelta
 import random
+from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 from ib_insync import FlexReport
 
 from bootstrap.ddd import ValueObject
+from bootstrap.messagebus.bus import MessageBus
 from bootstrap.messagebus.handler import Handler
 from bootstrap.messagebus.model import Command
+from bootstrap.rdb.repository import RdbRepository
 from bootstrap.scheduler.scheduler import Scheduler
-from ibkr_trade_log.flex.cash_transaction.handler import StoreCashTransactions
-from ibkr_trade_log.flex.cash_transaction.repository import CashTransactionDataFrame
-from ibkr_trade_log.flex.order.repository import OrderDataFrame
-from ibkr_trade_log.flex.transfer.handler import StoreTransfers
-from ibkr_trade_log.flex.transfer.repository import TransferDataFrame
-from ibkr_trade_log.flex.order.handler import StoreOrders
 
 
 @dataclass(frozen=True)
@@ -28,20 +25,33 @@ class LoadAndStoreReport(Command):
     filename: str
 
 
+class Topics(str, Enum):
+    Order = "Order"
+    CashTransaction = "CashTransaction"
+    Transfer = "Transfer"
+
+
 @dataclass(frozen=True)
 class FlexConfig(ValueObject):
     report_base: str
     token: str
     query_id: str
-    topics: List[str]
+    topics: List[Topics]
     query_interval_in_days: int = 1
 
 
 class FlexHandler(Handler):
-    def __init__(self, messagebus, scheduler: Scheduler, config: FlexConfig):
+    def __init__(
+        self,
+        messagebus: MessageBus,
+        scheduler: Scheduler,
+        config: FlexConfig,
+        repositories: Dict[Topics, RdbRepository],
+    ):
         super().__init__(messagebus)
         self.scheduler = scheduler
         self.config = config
+        self.repositories = repositories
         self._subscription = None
 
     def startup(self):
@@ -86,41 +96,20 @@ class FlexHandler(Handler):
         self.logger.info(
             f"Start storing report {report_info.fromDate} to {report_info.toDate}"
         )
-        if "Order" in self.config.topics:
-            data_frame = report.df(
-                topic="Order",
-                parseNumbers=False,
-            )
-            self.messagebus.tell(
-                StoreOrders(
-                    order_data_frame=OrderDataFrame(
-                        data_frame=data_frame,
-                    )
-                )
+        for topic in self.config.topics:
+            self.store_topic_in_report(
+                report=report,
+                topic=topic,
             )
 
-        if "Transfer" in self.config.topics:
-            data_frame = report.df(
-                topic="Transfer",
-                parseNumbers=False,
-            )
-            self.messagebus.tell(
-                StoreTransfers(
-                    transfer_data_frame=TransferDataFrame(
-                        data_frame=data_frame,
-                    )
-                )
-            )
-
-        if "CashTransaction" in self.config.topics:
-            data_frame = report.df(
-                topic="CashTransaction",
-                parseNumbers=False,
-            )
-            self.messagebus.tell(
-                StoreCashTransactions(
-                    cash_transaction_data_frame=CashTransactionDataFrame(
-                        data_frame=data_frame,
-                    )
-                )
-            )
+    def store_topic_in_report(
+        self,
+        report: FlexReport,
+        topic: Topics,
+    ):
+        data_frame = report.df(
+            topic=topic,
+            parseNumbers=False,
+        )
+        if data_frame is not None:
+            self.repositories[topic].add(data_frame)

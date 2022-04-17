@@ -3,28 +3,32 @@ from datetime import date, datetime
 from types import new_class
 from typing import List, TypeVar, Generic, get_args
 
+from pandas import DataFrame
 from sqlalchemy.dialects.postgresql import insert
 
 from bootstrap.logger import LoggerMixin
 from bootstrap.rdb.session import RdbSession
 
-DataFrameType = TypeVar("DataFrameType")
-RecordType = TypeVar("RecordType")
+DtoType = TypeVar("DtoType")
 
 
-class RdbMapper(Generic[DataFrameType, RecordType], LoggerMixin, ABC):
+class RdbMapper(Generic[DtoType], LoggerMixin, ABC):
     @property
-    def data_frame_type(self):
+    def dto_type(self):
         return get_args(self.__class__.__orig_bases__[0])[0]  # noqa
 
-    @property
-    def record_type(self):
-        return get_args(self.__class__.__orig_bases__[0])[1]  # noqa
+    def to_dto_dict_list(self, data_frame: DataFrame):
+        records = data_frame.to_dict("records")
+        return [self.to_dto_dict(record) for record in records]
 
-    def cast_to_valid_format(self, record: dict):
-        new_record = {}
-        for column in self.record_type.__table__.columns:
-            value = record[column.name]
+    def to_dto_list(self, data_frame: DataFrame):
+        dto_dict_list = self.to_dto_dict_list()
+        return [self.dto_type(**dto_dict) for dto_dict in dto_dict_list]
+
+    def to_dto_dict(self, data_frame_record: dict):
+        dto_dict = {}
+        for column in self.dto_type.__table__.columns:
+            value = data_frame_record[column.name]
             if value == "":
                 new_value = None
             else:
@@ -39,77 +43,59 @@ class RdbMapper(Generic[DataFrameType, RecordType], LoggerMixin, ABC):
                         # Some datetime field has not time attribute in the ibkr report
                         new_value = datetime.strptime(value, "%Y%m%d")
                 else:
-                    print(column.type)
+                    self.logger.error(f"unexpected type{column.type}")
                     raise NotImplementedError
-            new_record[column.name] = new_value
-        return new_record
+            dto_dict[column.name] = new_value
+        return dto_dict
 
-    def to_record_list(self, record_df: DataFrameType) -> List[RecordType]:
-        records = record_df.data_frame.to_dict("records")
-        return [
-            self.record_type(**self.cast_to_valid_format(record)) for record in records
-        ]
-
-    def to_dict_list(self, record_df: DataFrameType):
-        record_list = self.to_record_list(record_df)
-        return [record.to_dict() for record in record_list]
+    def to_dto(self, data_frame_row_dict: dict):
+        record_dict = self.to_dto_dict(data_frame_row_dict)
+        return self.dto_type(**record_dict)
 
     @staticmethod
     def from_repository(repository):
-        name = f"{repository.data_frame_type.__module__}.{repository.record_type.__name__}Mapper"
-        return new_class(
-            name, (RdbMapper[repository.data_frame_type, repository.record_type],), {}
-        )()
+        name = f"{repository.dto_type.__name__}Mapper"
+        return new_class(name, (RdbMapper[repository.dto_type],), {})()
 
 
-class RdbRepository(Generic[DataFrameType, RecordType], LoggerMixin, ABC):
+class RdbRepository(Generic[DtoType], LoggerMixin, ABC):
     @property
-    def data_frame_type(self):
+    def dto_type(self):
         return get_args(self.__class__.__orig_bases__[0])[0]  # noqa
-
-    @property
-    def record_type(self):
-        return get_args(self.__class__.__orig_bases__[0])[1]  # noqa
 
     def __init__(self, rdb_session: RdbSession):
         self.rdb_session = rdb_session
         self.mapper = RdbMapper.from_repository(self)
 
-    def create(self, order: RecordType):
+    def create(self, dto: DtoType):
         with self.rdb_session.write as session:
-            session.add(order)
+            session.add(dto)
 
-    def update(self, order: RecordType):
+    def update(self, dto: DtoType):
         with self.rdb_session.write as session:
-            session.merge(order)
+            session.merge(dto)
 
     def find(self, id):
         with self.rdb_session.read as session:
-            return (
-                session.query(self.record_type)
-                .filter(self.record_type.id == id)
-                .first()
-            )
+            return session.query(self.dto_type).filter(self.dto_type.id == id).first()
 
     def all_limit(self, limit: int = 5000):
         with self.rdb_session.read as session:
-            return session.query(self.record_type).limit(limit).all()
+            return session.query(self.dto_type).limit(limit).all()
 
-    def delete(self, order: RecordType):
+    def delete(self, dto: DtoType):
         with self.rdb_session.write as session:
-            session.query(self.record_type).filter(
-                self.record_type.id == order.id
-            ).delete()
+            session.query(self.dto_type).filter(self.dto_type.id == dto.id).delete()
 
-    def add(self, record_set: DataFrameType):
-        if record_set.data_frame is None:
-            return
-        record_dict_list = self.mapper.to_dict_list(record_set)
+    def add(self, data_frame: DataFrame):
+        self.logger.info(f"start adding {len(data_frame)} {self.dto_type.__name__}")
+
+        dto_dict_list = self.mapper.to_dto_dict_list(data_frame)
         with self.rdb_session.write as session:
             session.execute(
-                insert(self.record_type)
-                .values(record_dict_list)
+                insert(self.dto_type)
+                .values(dto_dict_list)
                 .on_conflict_do_nothing(
-                    constraint=self.record_type.__table__.primary_key,
+                    constraint=self.dto_type.__table__.primary_key,
                 )
             )

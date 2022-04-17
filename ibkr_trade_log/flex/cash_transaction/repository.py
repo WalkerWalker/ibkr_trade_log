@@ -60,7 +60,5 @@ class CashTransaction(RdbEntity):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
-class CashTransactionRepository(
-    RdbRepository[CashTransactionDataFrame, CashTransaction]
-):
+class CashTransactionRepository(RdbRepository[CashTransaction]):
     pass

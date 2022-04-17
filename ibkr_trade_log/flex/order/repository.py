@@ -98,5 +98,5 @@ class Order(RdbEntity):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
-class OrderRepository(RdbRepository[OrderDataFrame, Order]):
+class OrderRepository(RdbRepository[Order]):
     pass
