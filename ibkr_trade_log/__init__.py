@@ -1,6 +1,5 @@
 import yaml
 
-from ibkr_trade_log.api.plugin import ApiPlugin
 from ibkr_trade_log.app.app import IbkrApp
 
 

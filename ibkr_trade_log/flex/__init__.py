@@ -3,7 +3,6 @@ from ibkr_trade_log.flex.order import OrderRepository
 from ibkr_trade_log.flex.transfer import TransferRepository
 from ibkr_trade_log.flex.handler import (
     FlexHandler,
-    QueryAndStoreReport,
     Topics,
     FlexConfig,
 )

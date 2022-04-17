@@ -1,7 +1,7 @@
 from abc import ABC
 from datetime import date, datetime
 from types import new_class
-from typing import List, TypeVar, Generic, get_args
+from typing import TypeVar, Generic, get_args
 
 from pandas import DataFrame
 from sqlalchemy.dialects.postgresql import insert
@@ -22,7 +22,7 @@ class RdbMapper(Generic[DtoType], LoggerMixin, ABC):
         return [self.to_dto_dict(record) for record in records]
 
     def to_dto_list(self, data_frame: DataFrame):
-        dto_dict_list = self.to_dto_dict_list()
+        dto_dict_list = self.to_dto_dict_list(data_frame)
         return [self.dto_type(**dto_dict) for dto_dict in dto_dict_list]
 
     def to_dto_dict(self, data_frame_record: dict):
