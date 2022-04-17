@@ -1,13 +1,12 @@
-from ibkr_trade_log.flex.cash_transaction.repository import CashTransactionRepository
+from ibkr_trade_log.flex.cash_transaction import CashTransactionRepository
+from ibkr_trade_log.flex.order import OrderRepository
+from ibkr_trade_log.flex.transfer import TransferRepository
 from ibkr_trade_log.flex.handler import (
     FlexHandler,
     QueryAndStoreReport,
     Topics,
     FlexConfig,
 )
-
-from ibkr_trade_log.flex.order.repository import OrderRepository, OrderDataFrame, Order
-from ibkr_trade_log.flex.transfer.repository import TransferRepository
 
 
 RepositoryMapping = {
