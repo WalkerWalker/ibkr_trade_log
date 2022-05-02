@@ -3,7 +3,6 @@ from datetime import date, datetime
 from types import new_class
 from typing import TypeVar, Generic, get_args
 
-from pandas import DataFrame
 from sqlalchemy.dialects.postgresql import insert
 
 from bootstrap.logger import LoggerMixin
@@ -17,18 +16,10 @@ class RdbMapper(Generic[DtoType], LoggerMixin, ABC):
     def dto_type(self):
         return get_args(self.__class__.__orig_bases__[0])[0]  # noqa
 
-    def to_dto_dict_list(self, data_frame: DataFrame):
-        records = data_frame.to_dict("records")
-        return [self.to_dto_dict(record) for record in records]
-
-    def to_dto_list(self, data_frame: DataFrame):
-        dto_dict_list = self.to_dto_dict_list(data_frame)
-        return [self.dto_type(**dto_dict) for dto_dict in dto_dict_list]
-
-    def to_dto_dict(self, data_frame_record: dict):
+    def domain_to_dto_dict(self, domain):
         dto_dict = {}
         for column in self.dto_type.__table__.columns:
-            value = data_frame_record[column.name]
+            value = getattr(domain, column.name)
             if value == "":
                 new_value = None
             else:
@@ -48,9 +39,9 @@ class RdbMapper(Generic[DtoType], LoggerMixin, ABC):
             dto_dict[column.name] = new_value
         return dto_dict
 
-    def to_dto(self, data_frame_row_dict: dict):
-        record_dict = self.to_dto_dict(data_frame_row_dict)
-        return self.dto_type(**record_dict)
+    def domain_to_dto(self, domain):
+        dto_dict = self.domain_to_dto_dict(domain)
+        return self.dto_type(**dto_dict)
 
     @staticmethod
     def from_repository(repository):
@@ -87,15 +78,18 @@ class RdbRepository(Generic[DtoType], LoggerMixin, ABC):
         with self.rdb_session.write as session:
             session.query(self.dto_type).filter(self.dto_type.id == dto.id).delete()
 
-    def add(self, data_frame: DataFrame):
-        self.logger.info(f"start adding {len(data_frame)} {self.dto_type.__name__}")
+    def add_domain_list(self, domain_list: list):
+        if len(domain_list) == 0:
+            return
 
-        dto_dict_list = self.mapper.to_dto_dict_list(data_frame)
+        self.logger.info(f"start adding {len(domain_list)} {self.dto_type.__name__}")
+
+        dto_dict_list = [
+            self.mapper.domain_to_dto_dict(domain) for domain in domain_list
+        ]
         with self.rdb_session.write as session:
-            session.execute(
+            return session.execute(
                 insert(self.dto_type)
                 .values(dto_dict_list)
-                .on_conflict_do_nothing(
-                    constraint=self.dto_type.__table__.primary_key,
-                )
+                .on_conflict_do_nothing(constraint=self.dto_type.__table__.primary_key)
             )

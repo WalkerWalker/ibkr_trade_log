@@ -107,9 +107,8 @@ class FlexHandler(Handler):
         report: FlexReport,
         topic: Topics,
     ):
-        data_frame = report.df(
+        events = report.extract(
             topic=topic,
             parseNumbers=False,
         )
-        if data_frame is not None:
-            self.repositories[topic].add(data_frame)
+        self.repositories[topic].add_domain_list(events)
