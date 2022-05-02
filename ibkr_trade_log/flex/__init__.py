@@ -1,18 +1,7 @@
 from ibkr_trade_log.flex.cash_transaction import CashTransactionRepository
 from ibkr_trade_log.flex.order import OrderRepository
 from ibkr_trade_log.flex.transfer import TransferRepository
-from ibkr_trade_log.flex.handler import (
-    FlexHandler,
-    Topics,
-    FlexConfig,
-)
-
-
-RepositoryMapping = {
-    Topics.Order: OrderRepository,
-    Topics.CashTransaction: CashTransactionRepository,
-    Topics.Transfer: TransferRepository,
-}
+from ibkr_trade_log.flex.handler import FlexHandler, FlexConfig
 
 
 class FlexPlugin:
