@@ -12,6 +12,11 @@ from bootstrap.messagebus.handler import Handler
 from bootstrap.messagebus.model import Command
 from bootstrap.rdb.repository import RdbRepository
 from bootstrap.scheduler.scheduler import Scheduler
+from ibkr_trade_log.event_log.handler import (
+    OrdersExecuted,
+    TransfersExecuted,
+    CashTransactionsExecuted,
+)
 
 
 @dataclass(frozen=True)
@@ -111,6 +116,11 @@ class FlexHandler(Handler):
             parseNumbers=False,
         )
         self.order_repository.add_domain_list(orders)
+        self.messagebus.publish(
+            OrdersExecuted(
+                orders=orders,
+            )
+        )
 
     def store_cash_transaction_in_report(
         self,
@@ -121,6 +131,9 @@ class FlexHandler(Handler):
             parseNumbers=False,
         )
         self.cash_transaction_repository.add_domain_list(cash_transactions)
+        self.messagebus.publish(
+            CashTransactionsExecuted(cash_transactions=cash_transactions)
+        )
 
     def store_transfer_in_report(
         self,
@@ -131,3 +144,4 @@ class FlexHandler(Handler):
             parseNumbers=False,
         )
         self.transfer_repository.add_domain_list(transfers)
+        self.messagebus.publish(TransfersExecuted(transfers=transfers))

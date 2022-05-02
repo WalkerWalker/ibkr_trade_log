@@ -2,6 +2,7 @@ from bootstrap.logger import LoggerMixin, configure_logger
 from bootstrap.rdb.config import RdbConfig
 from bootstrap.scheduler.scheduler import Scheduler
 from ibkr_trade_log.api.plugin import ApiPlugin
+from ibkr_trade_log.event_log import EventPlugin
 from ibkr_trade_log.flex import FlexPlugin
 from ibkr_trade_log.flex.handler import FlexConfig
 
@@ -23,7 +24,7 @@ class IbkrApp(LoggerMixin):
 
         flex_config = FlexConfig(**config["flex"])
         self.flex_plugin = FlexPlugin(config=flex_config, app=self)
-
+        self.event_plugin = EventPlugin(app=self)
         self.api_plugin = ApiPlugin(app=self)
         self.cli_plugin = CliPlugin(app=self)
 
@@ -32,3 +33,4 @@ class IbkrApp(LoggerMixin):
         self.scheduler.startup()
         self.rdb_session_factory.startup()
         self.flex_plugin.startup()
+        self.event_plugin.startup()
