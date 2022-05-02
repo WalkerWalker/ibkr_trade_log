@@ -3,7 +3,6 @@ from datetime import timedelta
 import random
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List
 
 from ib_insync import FlexReport
 
@@ -36,7 +35,6 @@ class FlexConfig(ValueObject):
     report_base: str
     token: str
     query_id: str
-    topics: List[Topics]
     query_interval_in_days: int = 1
 
 
@@ -46,12 +44,16 @@ class FlexHandler(Handler):
         messagebus: MessageBus,
         scheduler: Scheduler,
         config: FlexConfig,
-        repositories: Dict[Topics, RdbRepository],
+        order_repository: RdbRepository,
+        cash_transaction_repository: RdbRepository,
+        transfer_repository: RdbRepository,
     ):
         super().__init__(messagebus)
         self.scheduler = scheduler
         self.config = config
-        self.repositories = repositories
+        self.order_repository = order_repository
+        self.cash_transaction_repository = cash_transaction_repository
+        self.transfer_repository = transfer_repository
         self._subscription = None
 
     def startup(self):
@@ -96,19 +98,36 @@ class FlexHandler(Handler):
         self.logger.info(
             f"Start storing report {report_info.fromDate} to {report_info.toDate}"
         )
-        for topic in self.config.topics:
-            self.store_topic_in_report(
-                report=report,
-                topic=topic,
-            )
+        self.store_order_in_report(report)
+        self.store_transfer_in_report(report)
+        self.store_cash_transaction_in_report(report)
 
-    def store_topic_in_report(
+    def store_order_in_report(
         self,
         report: FlexReport,
-        topic: Topics,
     ):
-        events = report.extract(
-            topic=topic,
+        orders = report.extract(
+            topic=Topics.Order,
             parseNumbers=False,
         )
-        self.repositories[topic].add_domain_list(events)
+        self.order_repository.add_domain_list(orders)
+
+    def store_cash_transaction_in_report(
+        self,
+        report: FlexReport,
+    ):
+        cash_transactions = report.extract(
+            topic=Topics.CashTransaction,
+            parseNumbers=False,
+        )
+        self.cash_transaction_repository.add_domain_list(cash_transactions)
+
+    def store_transfer_in_report(
+        self,
+        report: FlexReport,
+    ):
+        transfers = report.extract(
+            topic=Topics.Transfer,
+            parseNumbers=False,
+        )
+        self.transfer_repository.add_domain_list(transfers)

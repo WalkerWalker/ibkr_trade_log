@@ -27,18 +27,23 @@ class FlexPlugin:
         self.messagebus = app.messagebus
         self.rdb_session_factory = app.rdb_session_factory
 
-        self.repositories = {}
-        for topic in self.config.topics:
-            TopicRepository = RepositoryMapping[topic]
-            self.repositories[topic] = TopicRepository(
-                rdb_session=self.rdb_session_factory.build(),
-            )
+        self.order_repository = OrderRepository(
+            rdb_session=self.rdb_session_factory.build(),
+        )
+        self.cash_transaction_repository = CashTransactionRepository(
+            rdb_session=self.rdb_session_factory.build(),
+        )
+        self.transfer_repository = TransferRepository(
+            rdb_session=self.rdb_session_factory.build(),
+        )
 
         self.flex_handler = FlexHandler(
             messagebus=self.messagebus,
             config=self.config,
             scheduler=self.scheduler,
-            repositories=self.repositories,
+            order_repository=self.order_repository,
+            transfer_repository=self.transfer_repository,
+            cash_transaction_repository=self.cash_transaction_repository,
         )
 
     def startup(self):
