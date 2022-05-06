@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 import pytest
 from assertpy import assert_that
@@ -28,6 +29,11 @@ class StubQuery(Query[StubMessage]):
     message: str
 
 
+@dataclass(frozen=True)
+class StubQueryListReply(Query[List[StubMessage]]):
+    message: str
+
+
 class TestMemoryMessageBus:
     @pytest.fixture
     def messagebus(self):
@@ -50,6 +56,23 @@ class TestMemoryMessageBus:
         query = StubQuery(message="something")
         message = messagebus.ask(query)
         assert_that(message).is_equal_to(return_message)
+
+    def test_command_register_ask_flow_return_list(
+        self, messagebus, mocker: MockerFixture
+    ):
+        return_messages = [
+            StubMessage(message="something0"),
+            StubMessage(message="something1"),
+        ]
+        message_handler = mocker.MagicMock(return_value=return_messages)
+        messagebus.declare(StubQueryListReply, handler=message_handler)
+
+        query = StubQueryListReply(message="something")
+        reply = messagebus.ask(query)
+        assert_that(reply).is_instance_of(list)
+        assert_that(reply).is_length(2)
+        assert_that(reply[0]).is_equal_to(StubMessage(message="something0"))
+        assert_that(reply[1]).is_equal_to(StubMessage(message="something1"))
 
     def test_event_pub_sub_flow(self, messagebus, mocker: MockerFixture):
         event_handler = mocker.MagicMock()
