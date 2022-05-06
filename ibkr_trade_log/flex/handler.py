@@ -1,22 +1,19 @@
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import timedelta, datetime
 import random
 from enum import Enum
 from pathlib import Path
+from typing import List, Optional
 
 from ib_insync import FlexReport
 
 from bootstrap.ddd import ValueObject
 from bootstrap.messagebus.bus import MessageBus
 from bootstrap.messagebus.handler import Handler
-from bootstrap.messagebus.model import Command
+from bootstrap.messagebus.model import Command, Query
 from bootstrap.rdb.repository import RdbRepository
 from bootstrap.scheduler.scheduler import Scheduler
-from ibkr_trade_log.event_log.handler import (
-    OrdersExecuted,
-    TransfersExecuted,
-    CashTransactionsExecuted,
-)
+from ibkr_trade_log.flex.order import Order
 
 
 @dataclass(frozen=True)
@@ -43,6 +40,12 @@ class FlexConfig(ValueObject):
     query_interval_in_days: int = 1
 
 
+@dataclass(frozen=True)
+class OrdersInTimeRange(Query[List[Order]]):
+    before: Optional[datetime] = None
+    after: Optional[datetime] = None
+
+
 class FlexHandler(Handler):
     def __init__(
         self,
@@ -62,6 +65,7 @@ class FlexHandler(Handler):
         self._subscription = None
 
     def startup(self):
+        self.messagebus.declare(OrdersInTimeRange, self.handler_orders_in_time_range)
         self.messagebus.declare(LoadAndStoreReport, self.handle_load_and_store_report)
         self.messagebus.declare(QueryAndStoreReport, self.handle_query_and_store_report)
         self._subscription = self.scheduler.schedule(
@@ -116,11 +120,6 @@ class FlexHandler(Handler):
             parseNumbers=False,
         )
         self.order_repository.add_domain_list(orders)
-        self.messagebus.publish(
-            OrdersExecuted(
-                orders=orders,
-            )
-        )
 
     def store_cash_transaction_in_report(
         self,
@@ -131,9 +130,6 @@ class FlexHandler(Handler):
             parseNumbers=False,
         )
         self.cash_transaction_repository.add_domain_list(cash_transactions)
-        self.messagebus.publish(
-            CashTransactionsExecuted(cash_transactions=cash_transactions)
-        )
 
     def store_transfer_in_report(
         self,
@@ -144,4 +140,9 @@ class FlexHandler(Handler):
             parseNumbers=False,
         )
         self.transfer_repository.add_domain_list(transfers)
-        self.messagebus.publish(TransfersExecuted(transfers=transfers))
+
+    def handler_orders_in_time_range(self, query: OrdersInTimeRange):
+        return self.order_repository.filter_by_time(
+            before=query.before,
+            after=query.after,
+        )

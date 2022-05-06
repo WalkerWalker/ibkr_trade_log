@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Optional
+
 import uvicorn
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -5,7 +8,11 @@ from starlette.responses import RedirectResponse
 from fastapi import FastAPI
 
 from bootstrap.logger import LoggerMixin
-from ibkr_trade_log.flex.handler import QueryAndStoreReport, LoadAndStoreReport
+from ibkr_trade_log.flex.handler import (
+    QueryAndStoreReport,
+    LoadAndStoreReport,
+    OrdersInTimeRange,
+)
 
 
 class ApiPlugin(LoggerMixin):
@@ -42,3 +49,8 @@ class ApiPlugin(LoggerMixin):
             self.messagebus.tell(
                 QueryAndStoreReport(),
             )
+
+        @self.api.post("/events/orders")
+        def orders(before: Optional[datetime] = None, after: Optional[datetime] = None):
+            orders = self.messagebus.ask(OrdersInTimeRange(before, after))
+            return len(orders)

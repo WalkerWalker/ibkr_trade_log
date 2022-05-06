@@ -1,9 +1,10 @@
 from abc import ABC
 from datetime import date, datetime
 from types import new_class
-from typing import TypeVar, Generic, get_args
+from typing import TypeVar, Generic, get_args, Optional, List
 
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.sql.elements import BinaryExpression
 
 from bootstrap.logger import LoggerMixin
 from bootstrap.rdb.session import RdbSession
@@ -93,3 +94,24 @@ class RdbRepository(Generic[DtoType], LoggerMixin, ABC):
                 .values(dto_dict_list)
                 .on_conflict_do_nothing(constraint=self.dto_type.__table__.primary_key)
             )
+
+    def filter_by_time(
+        self,
+        before: Optional[datetime],
+        after: Optional[datetime],
+    ):
+        criteria = self._criteria(before, after)
+        with self.rdb_session.write as session:
+            return session.query(self.dto_type).filter(*criteria).all()
+
+    def _criteria(
+        self,
+        before: Optional[datetime],
+        after: Optional[datetime],
+    ) -> List[BinaryExpression]:
+        _criteria = []
+        if before is not None:
+            _criteria.append(self.dto_type.dateTime <= before)
+        if after is not None:
+            _criteria.append(self.dto_type.dateTime >= after)
+        return _criteria
