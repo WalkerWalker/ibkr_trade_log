@@ -37,11 +37,11 @@ services:
     labels:
       traefik.enable: "true"
       # http
-      traefik.http.routers.pgadmin-http.rule: Host(`${pgadmin_host}`)
+      traefik.http.routers.pgadmin-http.rule: Host(`${PGADMIN_HOST}`)
       traefik.http.routers.pgadmin-http.entrypoints: http
       traefik.http.routers.pgadmin-http.middlewares: https-redirect
       # https
-      traefik.http.routers.pgadmin-https.rule: Host(`${pgadmin_host}`)
+      traefik.http.routers.pgadmin-https.rule: Host(`${PGADMIN_HOST}`)
       traefik.http.routers.pgadmin-https.entrypoints: https
       traefik.http.routers.pgadmin-https.tls: "true"
       traefik.http.routers.pgadmin-https.tls.certresolver: tlsresolver
@@ -52,8 +52,7 @@ services:
       traefik.http.services.pgadmin.loadbalancer.server.port: 80
 
   ibkr-trade-log:
-    build:
-      context: ..
+    image: 466255695036.dkr.ecr.eu-central-1.amazonaws.com/ibkr-trade-log
     restart: unless-stopped
     networks:
       - reverse-proxy
@@ -64,11 +63,11 @@ services:
     labels:
       traefik.enable: "true"
       # http
-      traefik.http.routers.trade-log-http.rule: Host(`${trade_log_host}`)
+      traefik.http.routers.trade-log-http.rule: Host(`${TRADE_LOG_HOST}`)
       traefik.http.routers.trade-log-http.entrypoints: http
       traefik.http.routers.trade-log-http.middlewares: https-redirect
       # https
-      traefik.http.routers.trade-log-https.rule: Host(`${trade_log_host}`)
+      traefik.http.routers.trade-log-https.rule: Host(`${TRADE_LOG_HOST}`)
       traefik.http.routers.trade-log-https.entrypoints: https
       traefik.http.routers.trade-log-https.tls: "true"
       traefik.http.routers.trade-log-https.tls.certresolver: tlsresolver
