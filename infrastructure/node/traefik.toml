@@ -1,0 +1,115 @@
+################################################################
+# Global configuration
+################################################################
+[global]
+checkNewVersion = true
+sendAnonymousUsage = false
+
+################################################################
+# Entrypoints configuration
+################################################################
+
+[entryPoints]
+[entryPoints.http]
+address = ":80"
+
+[entryPoints.https]
+address = ":443"
+
+################################################################
+# Traefik logs configuration
+################################################################
+
+[log]
+
+# Log level
+#
+# Optional
+# Default: "ERROR"
+#
+# level = "DEBUG"
+
+# Sets the filepath for the traefik log. If not specified, stdout will be used.
+# Intermediate directories are created if necessary.
+#
+# Optional
+# Default: os.Stdout
+#
+# filePath = "log/traefik.log"
+
+# Format is either "json" or "common".
+#
+# Optional
+# Default: "common"
+#
+# format = "json"
+
+################################################################
+# Access logs configuration
+################################################################
+
+# Enable access logs
+# By default it will write to stdout and produce logs in the textual
+# Common Log Format (CLF), extended with additional fields.
+#
+# Optional
+#
+[accessLog]
+
+# Sets the file path for the access log. If not specified, stdout will be used.
+# Intermediate directories are created if necessary.
+#
+# Optional
+# Default: os.Stdout
+#
+# filePath = "/path/to/log/log.txt"
+
+# Format is either "json" or "common".
+#
+# Optional
+# Default: "common"
+#
+# format = "json"
+
+################################################################
+# API and dashboard configuration
+################################################################
+
+[api]
+
+# TODO Disable insecure dashboard
+insecure = true
+# dashboard = false
+
+################################################################
+# Ping configuration
+################################################################
+
+# Enable ping
+[ping]
+
+################################################################
+# Docker configuration backend
+################################################################
+
+# Enable Docker configuration backend
+[providers.docker]
+exposedByDefault = false
+
+# Ensure this name is the EXACT same name as the network using "docker network ls"
+network = "reverse-proxy"
+
+################################################################
+# Metrics configuration
+################################################################
+[metrics]
+[metrics.prometheus]
+addEntryPointsLabels = true
+
+################################################################
+# TLS configuration
+################################################################
+[certificatesResolvers.tlsresolver.acme]
+email = "letsencrypt@jiamin.io"
+storage = "/etc/letsencrypt/acme.json"
+[certificatesResolvers.tlsresolver.acme.tlsChallenge]

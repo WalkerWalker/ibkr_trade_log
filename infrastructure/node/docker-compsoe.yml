@@ -1,0 +1,34 @@
+version: '3'
+networks:
+  reverse-proxy:
+    name: reverse-proxy
+
+services:
+  reverse-proxy:
+    image: traefik:v2.5
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./traefik.toml:/etc/traefik/traefik.toml
+      - /etc/letsencrypt/:/etc/letsencrypt/
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - reverse-proxy
+    labels:
+      traefik.enable: "true"
+      # http
+      traefik.http.routers.proxy-http.rule: Host(`traefik.ibkr.jiamin.io`)
+      traefik.http.routers.proxy-http.entrypoints: http
+      traefik.http.routers.proxy-http.middlewares: https-redirect
+      # https
+      traefik.http.routers.proxy-https.rule: Host(`traefik.ibkr.jiamin.io`)
+      traefik.http.routers.proxy-https.entrypoints: https
+      traefik.http.routers.proxy-https.tls: "true"
+      traefik.http.routers.proxy-https.tls.certresolver: tlsresolver
+      # https middleware
+      traefik.http.middlewares.https-redirect.redirectscheme.scheme: https
+      traefik.http.middlewares.https-redirect.redirectscheme.permanent: "true"
+      # traefik dashboard
+      traefik.http.services.traefik.loadbalancer.server.port: 8080

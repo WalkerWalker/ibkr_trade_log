@@ -1,5 +1,5 @@
 .idea
 __pycache__
-infrastructure/config.yaml
-infrastructure/.env
+infrastructure/ibkr-trade-log/config.yaml
+infrastructure/ibkr-trade-log/.env
 config.yaml
