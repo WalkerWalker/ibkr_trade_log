@@ -26,3 +26,10 @@ services:
       - "8010:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+
+  ibkr-trade-log:
+    image: ibkr-trade-log
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./reports:/etc/reports
