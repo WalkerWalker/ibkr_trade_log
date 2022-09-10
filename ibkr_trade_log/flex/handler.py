@@ -89,6 +89,7 @@ class FlexHandler(Handler):
             token=self.config.token,
             queryId=self.config.query_id,
         )
+        self.save_report_xml(report)
         self.store_report(report)
 
     def load_report(self, report_path: Path):
@@ -101,6 +102,17 @@ class FlexHandler(Handler):
             token=token,
             queryId=query_id,
         )
+
+    # we now assume the report is always configured to be YearToDate and therefore name it with year only, not date.
+    def save_report_xml(self, report: FlexReport):
+        report_info = report.extract("FlexStatement", parseNumbers=False)[0]
+        account_id = report_info.accountId
+        from_data = report_info.fromDate
+        from_data_year = from_data[:4]
+        filename = f"{account_id}_{from_data_year}.xml"
+        report_path = Path(self.config.report_base) / "reports" / filename
+        self.logger.info(f"Save or overwrite report {filename}")
+        report.save(report_path)
 
     def store_report(self, report: FlexReport):
         report_info = report.extract("FlexStatement")[0]
