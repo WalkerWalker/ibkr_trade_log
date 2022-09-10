@@ -1,7 +1,9 @@
 FROM --platform=linux/amd64 python:3.8-slim-buster
 
+RUN pip install --upgrade pip
+RUN pip install poetry
+
 WORKDIR /app
-RUN pip install poetry virtualenv
 COPY poetry.lock pyproject.toml ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-root --only main
