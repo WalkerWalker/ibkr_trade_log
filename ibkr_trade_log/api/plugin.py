@@ -13,6 +13,7 @@ from ibkr_trade_log.flex.handler import (
     LoadAndStoreReport,
     OrdersInTimeRange,
 )
+from ibkr_trade_log.portfolio.handler import CalculatePortfolio
 
 
 class ApiPlugin(LoggerMixin):
@@ -52,5 +53,9 @@ class ApiPlugin(LoggerMixin):
 
         @self.api.post("/events/orders")
         def orders(before: Optional[datetime] = None, after: Optional[datetime] = None):
-            orders = self.messagebus.ask(OrdersInTimeRange(before, after))
-            return len(orders)
+            orders_in_time_range = self.messagebus.ask(OrdersInTimeRange(before, after))
+            return len(orders_in_time_range)
+
+        @self.api.post("/portfolio/calculate")
+        def portfolio_calculate():
+            self.messagebus.tell(CalculatePortfolio())
