@@ -30,7 +30,7 @@ class ProcessOrderFilled(Command):
 
 
 @dataclass(frozen=True)
-class CalculatePortfolioNow(Command):
+class CalculatePortfolio(Command):
     pass
 
 
@@ -53,12 +53,28 @@ class PortfolioHandler(Handler):
         self.messagebus.declare(ProcessTransfer, self.handle_transfer)
         self.messagebus.declare(ProcessCashTransaction, self.handle_cash_transaction)
         self.messagebus.declare(ProcessOrderFilled, self.handle_order_filled)
+        self.messagebus.declare(CalculatePortfolio, self.handle_calculate_portfolio)
+
+    def handle_calculate_portfolio(self, command: CalculatePortfolio):
+        transfers = self.transfer_repository.all_limit()
+        orders = self.order_repository.all_limit()
+        # change to events, superclass order, transfer, cash_transaction.
+        # order by time
+        for transfer in transfers:
+            self.add_transfer_to_portfolio(transfer)
+
+        for order in orders:
+            self.add_order_to_portfolio(order)
+
+        print(len(self.portfolio.campaigns))
 
     def handle_transfer(self, command: ProcessTransfer):
         self.logger.info(f"processing transfer {command.transfer}")
+        self.add_transfer_to_portfolio(command.transfer)
 
     def handle_cash_transaction(self, command: ProcessCashTransaction):
         self.logger.info(f"processing cash transaction {command.cash_transaction}")
+        self.add_cash_transaction_to_portfolio(command.cash_transaction)
 
     def handle_order_filled(self, command: ProcessOrderFilled):
         self.logger.info(f"processing filled order {command.order}")
@@ -66,15 +82,36 @@ class PortfolioHandler(Handler):
 
     def add_order_to_portfolio(self, order: Order):
         symbol = order.symbol
-        campaigns = self.portfolio.campaigns[symbol]
-        if len(campaigns) == 0:
+        if symbol not in self.portfolio.campaigns:
             self.portfolio.campaigns[symbol] = []
 
+        campaigns = self.portfolio.campaigns[symbol]
         for campaign in campaigns:
             if not campaign.is_closed:
-                campaign.add(order)
+                campaign.add_order(order)
                 return
 
         new_campaign = Campaign()
         new_campaign.add_order(order)
         self.portfolio.campaigns[symbol].append(new_campaign)
+
+    def add_transfer_to_portfolio(self, transfer: Transfer):
+        symbol = transfer.symbol
+        if symbol == "--":
+            return
+
+        if symbol not in self.portfolio.campaigns:
+            self.portfolio.campaigns[symbol] = []
+
+        campaigns = self.portfolio.campaigns[symbol]
+        for campaign in campaigns:
+            if not campaign.is_closed:
+                campaign.add_transfer(transfer)
+                return
+
+        new_campaign = Campaign()
+        new_campaign.add_transfer(transfer)
+        self.portfolio.campaigns[symbol].append(new_campaign)
+
+    def add_cash_transaction_to_portfolio(self, cash_transaction: CashTransaction):
+        raise NotImplementedError

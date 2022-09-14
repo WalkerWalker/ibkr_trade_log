@@ -53,6 +53,7 @@ class RdbSessionFactory:
             autocommit=self.config.autocommit,
             autoflush=self.config.autoflush,
             bind=self.engine,
+            expire_on_commit=False,
         )
 
     def startup(self):

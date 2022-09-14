@@ -2,6 +2,7 @@ from typing import List, Dict
 
 from bootstrap.ddd import Entity
 from ibkr_trade_log.flex.order import Order
+from ibkr_trade_log.flex.transfer import Transfer
 
 
 class Campaign(Entity):
@@ -14,6 +15,11 @@ class Campaign(Entity):
         if order.conid not in self.positions:
             self.positions[order.conid] = 0
         self.positions[order.conid] += order.quantity
+
+    def add_transfer(self, transfer: Transfer):
+        if transfer.conid not in self.positions:
+            self.positions[transfer.conid] = 0
+        self.positions[transfer.conid] += transfer.quantity
 
     @property
     def is_closed(self) -> bool:

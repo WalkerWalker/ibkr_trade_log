@@ -8,6 +8,7 @@ from ibkr_trade_log.flex.handler import FlexConfig
 from ibkr_trade_log.cli.cli import CliPlugin
 from bootstrap.messagebus.memory import MemoryMessageBus
 from bootstrap.rdb.session import RdbSessionFactory
+from ibkr_trade_log.portfolio import PortfolioPlugin
 
 
 class IbkrApp(LoggerMixin):
@@ -25,9 +26,11 @@ class IbkrApp(LoggerMixin):
         self.flex_plugin = FlexPlugin(config=flex_config, app=self)
         self.api_plugin = ApiPlugin(app=self)
         self.cli_plugin = CliPlugin(app=self)
+        self.portfolio_plugin = PortfolioPlugin(app=self)
 
     async def startup(self):
         self.logger.info("Ibkr App startup")
         self.scheduler.startup()
         self.rdb_session_factory.startup()
         self.flex_plugin.startup()
+        self.portfolio_plugin.startup()
