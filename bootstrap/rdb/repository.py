@@ -71,9 +71,14 @@ class RdbRepository(Generic[DtoType], LoggerMixin, ABC):
         with self.rdb_session.read as session:
             return session.query(self.dto_type).filter(self.dto_type.id == id).first()
 
-    def all_limit(self, limit: int = 5000):
+    def all_limit(self, order_by: str = None, limit: int = 5000):
         with self.rdb_session.read as session:
-            return session.query(self.dto_type).limit(limit).all()
+            return (
+                session.query(self.dto_type)
+                .order_by(self.dto_type.dateTime)
+                .limit(limit)
+                .all()
+            )
 
     def delete(self, dto: DtoType):
         with self.rdb_session.write as session:

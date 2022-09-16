@@ -1,3 +1,4 @@
+from dataclasses import field, dataclass
 from typing import List, Dict
 
 from bootstrap.ddd import Entity
@@ -5,10 +6,10 @@ from ibkr_trade_log.flex.order import Order
 from ibkr_trade_log.flex.transfer import Transfer
 
 
+@dataclass
 class Campaign(Entity):
-    symbols: str
-    orders: List[Order] = []
-    positions: Dict[int, int] = {}
+    orders: List[Order] = field(default_factory=list)
+    positions: Dict[int, float] = field(default_factory=dict)
 
     def add_order(self, order: Order):
         self.orders.append(order)
@@ -31,4 +32,4 @@ class Campaign(Entity):
 
     @property
     def has_open_positions(self):
-        return self.positions.values() != [0]
+        return not all(quantity == 0 for quantity in self.positions.values())

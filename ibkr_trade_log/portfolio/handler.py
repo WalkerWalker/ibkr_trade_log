@@ -81,7 +81,10 @@ class PortfolioHandler(Handler):
         self.add_order_to_portfolio(command.order)
 
     def add_order_to_portfolio(self, order: Order):
-        symbol = order.symbol
+        if order.underlyingSymbol is not None:
+            symbol = order.underlyingSymbol
+        else:
+            symbol = order.symbol
         if symbol not in self.portfolio.campaigns:
             self.portfolio.campaigns[symbol] = []
 
@@ -96,7 +99,12 @@ class PortfolioHandler(Handler):
         self.portfolio.campaigns[symbol].append(new_campaign)
 
     def add_transfer_to_portfolio(self, transfer: Transfer):
-        symbol = transfer.symbol
+        # TODO move it to it's own helper
+        if transfer.underlyingSymbol is not None:
+            symbol = transfer.underlyingSymbol
+        else:
+            symbol = transfer.symbol
+
         if symbol == "--":
             return
 
