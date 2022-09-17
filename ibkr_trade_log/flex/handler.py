@@ -13,7 +13,7 @@ from bootstrap.messagebus.handler import Handler
 from bootstrap.messagebus.model import Command, Query
 from bootstrap.rdb.repository import RdbRepository
 from bootstrap.scheduler.scheduler import Scheduler
-from ibkr_trade_log.flex.order import Order
+from ibkr_trade_log.flex.order import _Order
 
 
 @dataclass(frozen=True)
@@ -41,7 +41,7 @@ class FlexConfig(ValueObject):
 
 
 @dataclass(frozen=True)
-class OrdersInTimeRange(Query[List[Order]]):
+class OrdersInTimeRange(Query[List[_Order]]):
     before: Optional[datetime] = None
     after: Optional[datetime] = None
 

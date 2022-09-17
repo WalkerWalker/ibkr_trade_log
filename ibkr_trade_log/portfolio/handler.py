@@ -5,28 +5,13 @@ from bootstrap.messagebus.handler import Handler
 from bootstrap.messagebus.model import Command
 from ibkr_trade_log.flex import TransferRepository
 from ibkr_trade_log.flex.cash_transaction import (
-    CashTransaction,
+    _CashTransaction,
     CashTransactionRepository,
 )
-from ibkr_trade_log.flex.order import Order, OrderRepository
-from ibkr_trade_log.flex.transfer import Transfer
+from ibkr_trade_log.flex.order import _Order, OrderRepository
+from ibkr_trade_log.flex.transfer import _Transfer
 from ibkr_trade_log.portfolio.campaign import Campaign
 from ibkr_trade_log.portfolio.portfolio import Portfolio
-
-
-@dataclass(frozen=True)
-class ProcessTransfer(Command):
-    transfer: Transfer
-
-
-@dataclass(frozen=True)
-class ProcessCashTransaction(Command):
-    cash_transaction: CashTransaction
-
-
-@dataclass(frozen=True)
-class ProcessOrderFilled(Command):
-    order: Order
 
 
 @dataclass(frozen=True)
@@ -50,9 +35,6 @@ class PortfolioHandler(Handler):
         self.portfolio = portfolio
 
     def startup(self):
-        self.messagebus.declare(ProcessTransfer, self.handle_transfer)
-        self.messagebus.declare(ProcessCashTransaction, self.handle_cash_transaction)
-        self.messagebus.declare(ProcessOrderFilled, self.handle_order_filled)
         self.messagebus.declare(CalculatePortfolio, self.handle_calculate_portfolio)
 
     def handle_calculate_portfolio(self, command: CalculatePortfolio):
@@ -68,19 +50,7 @@ class PortfolioHandler(Handler):
 
         print(len(self.portfolio.campaigns))
 
-    def handle_transfer(self, command: ProcessTransfer):
-        self.logger.info(f"processing transfer {command.transfer}")
-        self.add_transfer_to_portfolio(command.transfer)
-
-    def handle_cash_transaction(self, command: ProcessCashTransaction):
-        self.logger.info(f"processing cash transaction {command.cash_transaction}")
-        self.add_cash_transaction_to_portfolio(command.cash_transaction)
-
-    def handle_order_filled(self, command: ProcessOrderFilled):
-        self.logger.info(f"processing filled order {command.order}")
-        self.add_order_to_portfolio(command.order)
-
-    def add_order_to_portfolio(self, order: Order):
+    def add_order_to_portfolio(self, order: _Order):
         if order.underlyingSymbol is not None:
             symbol = order.underlyingSymbol
         else:
@@ -98,7 +68,7 @@ class PortfolioHandler(Handler):
         new_campaign.add_order(order)
         self.portfolio.campaigns[symbol].append(new_campaign)
 
-    def add_transfer_to_portfolio(self, transfer: Transfer):
+    def add_transfer_to_portfolio(self, transfer: _Transfer):
         # TODO move it to it's own helper
         if transfer.underlyingSymbol is not None:
             symbol = transfer.underlyingSymbol
@@ -121,5 +91,5 @@ class PortfolioHandler(Handler):
         new_campaign.add_transfer(transfer)
         self.portfolio.campaigns[symbol].append(new_campaign)
 
-    def add_cash_transaction_to_portfolio(self, cash_transaction: CashTransaction):
+    def add_cash_transaction_to_portfolio(self, cash_transaction: _CashTransaction):
         raise NotImplementedError

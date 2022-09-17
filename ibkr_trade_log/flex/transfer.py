@@ -13,7 +13,7 @@ class TransferDataFrame(ValueObject):
     data_frame: DataFrame
 
 
-class Transfer(RdbEntity):
+class _Transfer(RdbEntity):
     __tablename__ = "ibkr_transfers"
     transactionID = Column(Text, primary_key=True)
 
@@ -70,5 +70,5 @@ class Transfer(RdbEntity):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
-class TransferRepository(RdbRepository[Transfer]):
+class TransferRepository(RdbRepository[_Transfer]):
     pass

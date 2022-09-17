@@ -13,7 +13,7 @@ class CashTransactionDataFrame(ValueObject):
     data_frame: DataFrame
 
 
-class CashTransaction(RdbEntity):
+class _CashTransaction(RdbEntity):
     __tablename__ = "ibkr_cash_transactions"
 
     transactionID = Column(Text, primary_key=True)
@@ -60,5 +60,5 @@ class CashTransaction(RdbEntity):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
-class CashTransactionRepository(RdbRepository[CashTransaction]):
+class CashTransactionRepository(RdbRepository[_CashTransaction]):
     pass

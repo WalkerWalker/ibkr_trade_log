@@ -2,22 +2,22 @@ from dataclasses import field, dataclass
 from typing import List, Dict
 
 from bootstrap.ddd import Entity
-from ibkr_trade_log.flex.order import Order
-from ibkr_trade_log.flex.transfer import Transfer
+from ibkr_trade_log.flex.order import _Order
+from ibkr_trade_log.flex.transfer import _Transfer
 
 
 @dataclass
 class Campaign(Entity):
-    orders: List[Order] = field(default_factory=list)
+    orders: List[_Order] = field(default_factory=list)
     positions: Dict[int, float] = field(default_factory=dict)
 
-    def add_order(self, order: Order):
+    def add_order(self, order: _Order):
         self.orders.append(order)
         if order.conid not in self.positions:
             self.positions[order.conid] = 0
         self.positions[order.conid] += order.quantity
 
-    def add_transfer(self, transfer: Transfer):
+    def add_transfer(self, transfer: _Transfer):
         if transfer.conid not in self.positions:
             self.positions[transfer.conid] = 0
         self.positions[transfer.conid] += transfer.quantity
