@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 import random
 from enum import Enum
 from pathlib import Path
@@ -133,7 +133,7 @@ class FlexHandler(Handler):
             topic=Topics.Order,
             parseNumbers=False,
         )
-        orders = [Order.from_flex(flex_order) for flex_order in flex_orders]
+        orders = [self.from_flex(Order, flex_order) for flex_order in flex_orders]
         self.order_repository.add_domain_list(orders)
 
     def store_cash_transaction_in_report(
@@ -145,7 +145,7 @@ class FlexHandler(Handler):
             parseNumbers=False,
         )
         cash_transactions = [
-            CashTransaction.from_flex(flex_cash_transaction)
+            self.from_flex(CashTransaction, flex_cash_transaction)
             for flex_cash_transaction in flex_cash_transactions
         ]
 
@@ -160,7 +160,7 @@ class FlexHandler(Handler):
             parseNumbers=False,
         )
         transfers = [
-            Transfer.from_flex(flex_transfer) for flex_transfer in flex_transfers
+            self.from_flex(Transfer, flex_transfer) for flex_transfer in flex_transfers
         ]
         self.transfer_repository.add_domain_list(transfers)
 
@@ -169,3 +169,26 @@ class FlexHandler(Handler):
             before=query.before,
             after=query.after,
         )
+
+    def from_flex(self, domain_type, flex_obj):
+        flex_obj_dict = flex_obj.__dict__
+        domain_dict = {}
+        for key, value in flex_obj_dict.items():
+            if value == "":
+                new_value = None
+            else:
+                key_type = domain_type.__annotations__[key]
+                if key_type in [str, int, float]:
+                    new_value = key_type(value)
+                elif key_type == date:
+                    new_value = datetime.strptime(value, "%Y%m%d").date()
+                elif key_type == datetime:
+                    if ";" in value:
+                        new_value = datetime.strptime(value, "%Y%m%d;%H%M%S")
+                    else:
+                        # Some datetime field has not time attribute in the ibkr flex report
+                        new_value = datetime.strptime(value, "%Y%m%d")
+                else:
+                    raise NotImplementedError
+            domain_dict[key] = new_value
+        return domain_type(**domain_dict)
