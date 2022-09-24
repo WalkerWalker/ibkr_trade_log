@@ -10,14 +10,19 @@ from bootstrap.logger import LoggerMixin
 from bootstrap.rdb.session import RdbSession
 
 DtoType = TypeVar("DtoType")
+DomainType = TypeVar("DomainType")
 
 
-class RdbMapper(Generic[DtoType], LoggerMixin, ABC):
+class RdbMapper(Generic[DomainType, DtoType], LoggerMixin, ABC):
     @property
-    def dto_type(self):
+    def domain_type(self):
         return get_args(self.__class__.__orig_bases__[0])[0]  # noqa
 
-    def domain_to_dto_dict(self, domain):
+    @property
+    def dto_type(self):
+        return get_args(self.__class__.__orig_bases__[0])[1]  # noqa
+
+    def domain_to_dto_dict(self, domain: DomainType):
         dto_dict = {}
         for column in self.dto_type.__table__.columns:
             value = getattr(domain, column.name)
@@ -40,20 +45,26 @@ class RdbMapper(Generic[DtoType], LoggerMixin, ABC):
             dto_dict[column.name] = new_value
         return dto_dict
 
-    def domain_to_dto(self, domain):
+    def domain_to_dto(self, domain: DomainType):
         dto_dict = self.domain_to_dto_dict(domain)
         return self.dto_type(**dto_dict)
 
     @staticmethod
     def from_repository(repository):
         name = f"{repository.dto_type.__name__}Mapper"
-        return new_class(name, (RdbMapper[repository.dto_type],), {})()
+        return new_class(
+            name, (RdbMapper[repository.domain_type, repository.dto_type],), {}
+        )()
 
 
-class RdbRepository(Generic[DtoType], LoggerMixin, ABC):
+class RdbRepository(Generic[DomainType, DtoType], LoggerMixin, ABC):
+    @property
+    def domain_type(self):
+        return get_args(self.__class__.__orig_bases__[0])[0]  # noqa
+
     @property
     def dto_type(self):
-        return get_args(self.__class__.__orig_bases__[0])[0]  # noqa
+        return get_args(self.__class__.__orig_bases__[0])[1]  # noqa
 
     def __init__(self, rdb_session: RdbSession):
         self.rdb_session = rdb_session
@@ -84,11 +95,11 @@ class RdbRepository(Generic[DtoType], LoggerMixin, ABC):
         with self.rdb_session.write as session:
             session.query(self.dto_type).filter(self.dto_type.id == dto.id).delete()
 
-    def add_domain_list(self, domain_list: list):
+    def add_domain_list(self, domain_list: List[DomainType]):
         if len(domain_list) == 0:
             return
 
-        self.logger.info(f"start adding {len(domain_list)} {self.dto_type.__name__}")
+        self.logger.info(f"start adding {len(domain_list)} {self.domain_type.__name__}")
 
         dto_dict_list = [
             self.mapper.domain_to_dto_dict(domain) for domain in domain_list
