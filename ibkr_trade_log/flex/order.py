@@ -90,8 +90,28 @@ class Order(ValueObject):
     weight: str
 
     @classmethod
-    def from_flex_order(cls, flex_order):
-        return cls(**flex_order.__dict__)
+    def from_flex(cls, flex):
+        flex_dict = flex.__dict__
+        domain_dict = {}
+        for key, value in flex_dict.items():
+            if value == "":
+                new_value = None
+            else:
+                key_type = cls.__annotations__[key]
+                if key_type in [str, int, float]:
+                    new_value = key_type(value)
+                elif key_type == date:
+                    new_value = datetime.strptime(value, "%Y%m%d").date()
+                elif key_type == datetime:
+                    if ";" in value:
+                        new_value = datetime.strptime(value, "%Y%m%d;%H%M%S")
+                    else:
+                        # Some datetime field has not time attribute in the ibkr flex report
+                        new_value = datetime.strptime(value, "%Y%m%d")
+                else:
+                    raise NotImplementedError
+            domain_dict[key] = new_value
+        return cls(**domain_dict)
 
 
 class _Order(RdbEntity):

@@ -13,7 +13,9 @@ from bootstrap.messagebus.handler import Handler
 from bootstrap.messagebus.model import Command, Query
 from bootstrap.rdb.repository import RdbRepository
 from bootstrap.scheduler.scheduler import Scheduler
+from ibkr_trade_log.flex.cash_transaction import CashTransaction
 from ibkr_trade_log.flex.order import _Order, Order
+from ibkr_trade_log.flex.transfer import Transfer
 
 
 @dataclass(frozen=True)
@@ -131,27 +133,35 @@ class FlexHandler(Handler):
             topic=Topics.Order,
             parseNumbers=False,
         )
-        orders = [Order.from_flex_order(flex_order) for flex_order in flex_orders]
+        orders = [Order.from_flex(flex_order) for flex_order in flex_orders]
         self.order_repository.add_domain_list(orders)
 
     def store_cash_transaction_in_report(
         self,
         report: FlexReport,
     ):
-        cash_transactions = report.extract(
+        flex_cash_transactions = report.extract(
             topic=Topics.CashTransaction,
             parseNumbers=False,
         )
+        cash_transactions = [
+            CashTransaction.from_flex(flex_cash_transaction)
+            for flex_cash_transaction in flex_cash_transactions
+        ]
+
         self.cash_transaction_repository.add_domain_list(cash_transactions)
 
     def store_transfer_in_report(
         self,
         report: FlexReport,
     ):
-        transfers = report.extract(
+        flex_transfers = report.extract(
             topic=Topics.Transfer,
             parseNumbers=False,
         )
+        transfers = [
+            Transfer.from_flex(flex_transfer) for flex_transfer in flex_transfers
+        ]
         self.transfer_repository.add_domain_list(transfers)
 
     def handler_orders_in_time_range(self, query: OrdersInTimeRange):

@@ -1,5 +1,6 @@
 from abc import ABC
-from datetime import date, datetime
+from dataclasses import asdict
+from datetime import datetime
 from types import new_class
 from typing import TypeVar, Generic, get_args, Optional, List
 
@@ -22,32 +23,8 @@ class RdbMapper(Generic[DomainType, DtoType], LoggerMixin, ABC):
     def dto_type(self):
         return get_args(self.__class__.__orig_bases__[0])[1]  # noqa
 
-    def domain_to_dto_dict(self, domain: DomainType):
-        dto_dict = {}
-        for column in self.dto_type.__table__.columns:
-            value = getattr(domain, column.name)
-            if value == "":
-                new_value = None
-            else:
-                if column.type.python_type in [str, int, float]:
-                    new_value = column.type.python_type(value)
-                elif column.type.python_type == date:
-                    new_value = datetime.strptime(value, "%Y%m%d").date()
-                elif column.type.python_type == datetime:
-                    if ";" in value:
-                        new_value = datetime.strptime(value, "%Y%m%d;%H%M%S")
-                    else:
-                        # Some datetime field has not time attribute in the ibkr report
-                        new_value = datetime.strptime(value, "%Y%m%d")
-                else:
-                    self.logger.error(f"unexpected type{column.type}")
-                    raise NotImplementedError
-            dto_dict[column.name] = new_value
-        return dto_dict
-
-    def domain_to_dto(self, domain: DomainType):
-        dto_dict = self.domain_to_dto_dict(domain)
-        return self.dto_type(**dto_dict)
+    def to_dto(self, domain: DomainType) -> DtoType:
+        return self.dto_type(**asdict(domain)) if domain else None
 
     @staticmethod
     def from_repository(repository):
@@ -99,17 +76,23 @@ class RdbRepository(Generic[DomainType, DtoType], LoggerMixin, ABC):
         if len(domain_list) == 0:
             return
 
-        self.logger.info(f"start adding {len(domain_list)} {self.domain_type.__name__}")
+        self.logger.debug(
+            f"start adding {len(domain_list)} {self.domain_type.__name__}"
+        )
 
-        dto_dict_list = [
-            self.mapper.domain_to_dto_dict(domain) for domain in domain_list
-        ]
+        dto_dict_list = [self.mapper.to_dto(domain).to_dict() for domain in domain_list]
         with self.rdb_session.write as session:
-            return session.execute(
+            session.execute(
                 insert(self.dto_type)
                 .values(dto_dict_list)
                 .on_conflict_do_nothing(constraint=self.dto_type.__table__.primary_key)
             )
+
+        self.logger.info(
+            f"finished adding {len(domain_list)} {self.domain_type.__name__}"
+        )
+
+        return
 
     def filter_by_time(
         self,
