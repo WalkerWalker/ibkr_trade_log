@@ -13,7 +13,7 @@ from bootstrap.messagebus.handler import Handler
 from bootstrap.messagebus.model import Command, Query
 from bootstrap.rdb.repository import RdbRepository
 from bootstrap.scheduler.scheduler import Scheduler
-from ibkr_trade_log.flex.order import _Order
+from ibkr_trade_log.flex.order import _Order, Order
 
 
 @dataclass(frozen=True)
@@ -131,7 +131,8 @@ class FlexHandler(Handler):
             topic=Topics.Order,
             parseNumbers=False,
         )
-        self.order_repository.add_domain_list(flex_orders)
+        orders = [Order.from_flex_order(flex_order) for flex_order in flex_orders]
+        self.order_repository.add_domain_list(orders)
 
     def store_cash_transaction_in_report(
         self,
