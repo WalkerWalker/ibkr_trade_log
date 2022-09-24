@@ -127,11 +127,11 @@ class FlexHandler(Handler):
         self,
         report: FlexReport,
     ):
-        orders = report.extract(
+        flex_orders = report.extract(
             topic=Topics.Order,
             parseNumbers=False,
         )
-        self.order_repository.add_domain_list(orders)
+        self.order_repository.add_domain_list(flex_orders)
 
     def store_cash_transaction_in_report(
         self,
